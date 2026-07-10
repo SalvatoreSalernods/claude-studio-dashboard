@@ -15,7 +15,9 @@ del tuo lavoro segue un metodo ripetibile, quali clienti stai trascurando, cosa
 > YOUR workspace is organized. UI and docs are in Italian for now.
 
 **[→ Demo live](https://salvatoresalernods.github.io/claude-studio-dashboard/)**
-(dati di fantasia, generati da `engine/demo.py`)
+(dati di fantasia, generati da `engine/demo.py`) ·
+**[→ Guida alla lettura](https://salvatoresalernods.github.io/claude-studio-dashboard/guida.html)**
+(metriche, soglie, esempi, glossario)
 
 ## Cosa misura
 

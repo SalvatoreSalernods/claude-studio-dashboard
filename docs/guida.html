@@ -1,0 +1,385 @@
+<title>Guida alla Claude Studio Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:        #f4f5f8;
+    --card:      #ffffff;
+    --ink:       #14151a;
+    --ink2:      #5b5d6b;
+    --muted:     #8f91a0;
+    --line:      #eaebf0;
+    --accent:    #6250e8;
+    --accent-so: #efedfd;
+    --shadow:    0 1px 2px rgba(22,22,45,.04), 0 10px 28px -18px rgba(22,22,45,.14);
+    --good:      #0f7b0f;  --good-bg: rgba(12,163,12,.12);
+    --warn:      #9a6b00;  --warn-bg: rgba(250,178,25,.16);
+    --bad:       #b53030;  --bad-bg:  rgba(208,59,59,.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1014; --card: #17181d; --ink: #f2f2f6; --ink2: #b8bac6;
+      --muted: #82848f; --line: #262730; --accent: #8f83f0;
+      --accent-so: rgba(143,131,240,.14); --shadow: none;
+      --good: #4fc44f; --warn: #e5b04a; --bad: #e66767;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f5f8; --card: #ffffff; --ink: #14151a; --ink2: #5b5d6b;
+    --muted: #8f91a0; --line: #eaebf0; --accent: #6250e8; --accent-so: #efedfd;
+    --shadow: 0 1px 2px rgba(22,22,45,.04), 0 10px 28px -18px rgba(22,22,45,.14);
+    --good: #0f7b0f; --warn: #9a6b00; --bad: #b53030;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1014; --card: #17181d; --ink: #f2f2f6; --ink2: #b8bac6;
+    --muted: #82848f; --line: #262730; --accent: #8f83f0;
+    --accent-so: rgba(143,131,240,.14); --shadow: none;
+    --good: #4fc44f; --warn: #e5b04a; --bad: #e66767;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--ink);
+    font-size: 15px; line-height: 1.62; margin: 0;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 20px 90px; }
+
+  .eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .09em;
+             text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+  h1 { font-size: 27px; font-weight: 700; line-height: 1.2; margin: 0 0 10px;
+       text-wrap: balance; letter-spacing: -.01em; }
+  .lede { color: var(--ink2); font-size: 16px; margin: 0 0 6px; max-width: 62ch; }
+  .meta { color: var(--muted); font-size: 12.5px; margin: 0 0 26px; }
+
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 38px; }
+  nav.toc a { font-size: 12.5px; font-weight: 600; color: var(--accent);
+              background: var(--accent-so); border-radius: 999px;
+              padding: 6px 13px; text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section { margin: 0 0 44px; }
+  h2 { font-size: 19px; font-weight: 700; margin: 0 0 4px; letter-spacing: -.005em;
+       text-wrap: balance; scroll-margin-top: 20px; }
+  h2 .n { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 6px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+  h3 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  p { margin: 0 0 12px; max-width: 68ch; }
+  ul { margin: 0 0 12px; padding-left: 22px; }
+  li { margin: 0 0 6px; max-width: 64ch; }
+  strong { font-weight: 650; }
+  em { font-style: italic; }
+  a { color: var(--accent); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88em;
+         background: var(--accent-so); border-radius: 5px; padding: 1px 5px; }
+
+  .callout { background: var(--card); border: 1px solid var(--line);
+             border-left: 3px solid var(--accent); border-radius: 10px;
+             padding: 14px 18px; margin: 16px 0 18px; box-shadow: var(--shadow); }
+  .callout p { margin: 0; }
+  .callout p + p { margin-top: 8px; }
+  .callout .ct { font-size: 11.5px; font-weight: 700; letter-spacing: .07em;
+                 text-transform: uppercase; color: var(--accent); margin: 0 0 5px; }
+
+  /* replica delle tile della dashboard, per gli esempi */
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+          box-shadow: var(--shadow); padding: 15px 18px 13px; max-width: 330px;
+          margin: 14px 0 12px; }
+  .tile .tl { font-size: 12px; font-weight: 600; color: var(--ink2); margin: 0 0 3px; }
+  .tile .tv { font-size: 28px; font-weight: 700; letter-spacing: -.02em;
+              font-variant-numeric: tabular-nums; }
+  .tile .tv .u { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .tile .tn { font-size: 11.5px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 999px;
+          padding: 2px 9px; margin-left: 8px; vertical-align: 6px; }
+  .pill.flat { background: var(--line); color: var(--ink2); }
+  .pill.good { background: var(--good-bg); color: var(--good); }
+  .pill.bad  { background: var(--bad-bg);  color: var(--bad); }
+
+  .sem { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 16px; }
+  .sem span { font-size: 12.5px; font-weight: 600; border-radius: 8px; padding: 6px 12px; }
+  .sem .g { background: var(--good-bg); color: var(--good); }
+  .sem .y { background: var(--warn-bg); color: var(--warn); }
+  .sem .r { background: var(--bad-bg); color: var(--bad); }
+
+  .twrap { overflow-x: auto; margin: 10px 0 22px; border: 1px solid var(--line);
+           border-radius: 12px; background: var(--card); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 13.5px; }
+  caption { text-align: left; font-size: 13px; font-weight: 700; padding: 13px 16px 4px;
+            color: var(--ink); }
+  caption .cs { font-weight: 400; color: var(--muted); }
+  th { text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+       text-transform: uppercase; color: var(--muted); padding: 10px 16px 7px;
+       border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: top;
+       line-height: 1.5; }
+  tr:last-child td { border-bottom: 0; }
+  td.dove { font-weight: 650; white-space: nowrap; }
+  td.soglia { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600;
+              color: var(--accent); }
+
+  dl { margin: 0; }
+  dl > div { padding: 13px 0; border-bottom: 1px solid var(--line); }
+  dl > div:last-child { border-bottom: 0; }
+  dt { font-weight: 650; margin: 0 0 3px; }
+  dd { margin: 0; color: var(--ink2); max-width: 66ch; }
+
+  .footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line);
+            padding-top: 18px; margin-top: 10px; }
+  .footer p { margin: 0 0 6px; }
+  @media (max-width: 560px) { .wrap { padding: 26px 16px 70px; } h1 { font-size: 23px; } }
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">Claude Studio Dashboard · manuale d'uso</p>
+<h1>Guida alla lettura della dashboard</h1>
+<p class="lede">Come leggere i numeri, capire quando un valore chiede un'azione e quando invece va tutto bene. Pensata per chi apre la dashboard per la prima volta.</p>
+<p class="meta">Si riferisce alla Claude Studio Dashboard · gli esempi usano i dati della <a href="index.html">demo</a> (dati di fantasia)</p>
+
+<nav class="toc">
+  <a href="#cosa">Che cos'è</a>
+  <a href="#tile">I 5 numeri in alto</a>
+  <a href="#mappa">Le sezioni</a>
+  <a href="#esempi">Esempi di lettura</a>
+  <a href="#soglie">Soglie e consigli automatici</a>
+  <a href="#glossario">Glossario</a>
+  <a href="#limiti">Cosa la dashboard non vede</a>
+</nav>
+
+<section id="cosa">
+  <h2><span class="n">1.</span>Che cos'è e come funziona</h2>
+  <p class="sub">Una fotografia dello studio, scattata dai dati reali di lavoro.</p>
+  <p>La dashboard fotografa lo stato del lavoro fatto con Claude Code: quanto lavoro passa da processi codificati, quali clienti sono attivi, quali strumenti hanno problemi, quanto costa ogni consegna. Non richiede inserimento manuale di dati: uno scanner legge i diari delle sessioni, i file consegnati nelle cartelle dei clienti e la telemetria dei consumi, e ne ricava tutti i numeri.</p>
+  <p>Tre cose da sapere prima di leggerla:</p>
+  <ul>
+    <li><strong>La finestra è di 30 giorni.</strong> Quasi tutti i numeri si riferiscono agli ultimi 30 giorni; il periodo esatto («dal … al …») è scritto nell'intestazione della pagina.</li>
+    <li><strong>Si aggiorna a comando.</strong> Basta dire <em>«aggiorna la dashboard»</em> in una sessione di Claude Code. Ogni aggiornamento salva anche una riga nello storico: con uno scan al giorno si costruiscono i grafici di andamento e i confronti tra periodi.</li>
+    <li><strong>I numeri servono a decidere, non a dare voti.</strong> Ogni metrica esiste perché suggerisce un'azione precisa quando esce dalla zona buona. Se non c'è niente da fare, la dashboard lo dice esplicitamente («Niente da riparare», «Nessuna azione da fare»).</li>
+  </ul>
+</section>
+
+<section id="tile">
+  <h2><span class="n">2.</span>I 5 numeri in alto (le tile)</h2>
+  <p class="sub">Il riassunto in una riga: se hai 30 secondi, guarda solo queste.</p>
+
+  <h3>Salute dello studio (0–100)</h3>
+  <p>È il numero principale: un punteggio unico che combina tre ingredienti, ciascuno col suo peso.</p>
+  <div class="callout">
+    <p class="ct">La formula</p>
+    <p><strong>Salute = 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti</strong></p>
+    <p>Metodo = % di sessioni operative dentro flussi codificati · Strumenti = 100 meno le penalità dei problemi su ciò che usi davvero · Copertura = % di clienti attivi negli ultimi 14 giorni.</p>
+  </div>
+  <p>Chiave di lettura concordata:</p>
+  <div class="sem">
+    <span class="g">80–100 · in salute</span>
+    <span class="y">60–79 · da tenere d'occhio</span>
+    <span class="r">sotto 60 · serve un intervento</span>
+  </div>
+  <p>La nota sotto il numero mostra sempre i tre ingredienti: così vedi subito <em>quale</em> dei tre sta tirando giù il punteggio, senza fare conti.</p>
+
+  <h3>Quota di metodo (%)</h3>
+  <p>Su 100 sessioni di lavoro vero (le chat di sola conversazione non contano), quante sono passate da un flusso codificato — una skill, una pipeline — invece che dal lavoro «a mano libera». Più è alta, più il metodo di lavoro è industrializzato: ripetibile, delegabile, meno costoso. È l'ingrediente che pesa di più nella Salute (40%).</p>
+
+  <h3>Clienti freddi (numero)</h3>
+  <p>Quanti clienti attivi non hanno <em>nessuna</em> attività da più di 14 giorni. L'ideale è zero. La nota elenca i nomi: è la lista delle telefonate da fare. Qui scendere è un bene: la pillola diventa verde quando il numero cala.</p>
+
+  <h3>Costo per consegna (€) — oppure Peso per consegna (KB)</h3>
+  <p>Quanto costa in media, in consumo di modello, ogni file consegnato. Il costo in euro compare quando la sonda di telemetria ha coperto almeno una consegna; il cambio dollaro→euro è quello ufficiale BCE del giorno, indicato nella nota. Se la telemetria non ha ancora dati, la tile mostra il vecchio indicatore sostitutivo: il peso del diario di sessione in KB diviso per le consegne. Questo numero <strong>non entra</strong> nella formula della Salute: misura un costo, non un problema.</p>
+
+  <h3>Da riparare (numero)</h3>
+  <p>Quanti problemi concreti toccano la salute dello studio in questo momento: una skill invisibile, un connettore rotto, un controllo periodico fallito. Ogni voce ha un peso che viene sottratto al punteggio Strumenti. Zero è lo stato normale.</p>
+
+  <div class="callout">
+    <p class="ct">La pillola accanto a ogni numero</p>
+    <p>Ogni tile confronta il valore con lo scan precedente: <strong>«stabile»</strong> se la variazione è minima (sotto 0,5), altrimenti verde o rossa a seconda che il movimento sia buono o cattivo <em>per quella metrica</em>. Per Clienti freddi, Costo e Da riparare, scendere è un bene.</p>
+  </div>
+</section>
+
+<section id="mappa">
+  <h2><span class="n">3.</span>Le sezioni, dall'alto in basso</h2>
+  <p class="sub">Cosa trovi scorrendo la pagina e a quale domanda risponde ogni card.</p>
+  <div class="twrap"><table>
+    <thead><tr><th>Sezione</th><th>A quale domanda risponde</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Andamento</td><td>Come si muovono nel tempo Salute, Metodo e Copertura? (finestre da 14 giorni a 12 mesi; i punti tratteggiati prima dello storico sono ricostruiti dai diari, settimana per settimana)</td></tr>
+      <tr><td class="dove">Confronto periodi</td><td>Questo periodo è andato meglio o peggio del precedente? (medie giornaliere su 7, 14 o 30 giorni; «—» = nessuno scan registrato in quel periodo)</td></tr>
+      <tr><td class="dove">Da riparare</td><td>Cosa è rotto adesso e quanto pesa sulla Salute? (passando il mouse su una voce vedi il peso, es. «pesa −15 sul punteggio Strumenti»)</td></tr>
+      <tr><td class="dove">Decisioni in sospeso</td><td>Cosa aspetta solo una scelta — collegare o scollegare un servizio mai usato? Non penalizza la Salute: è pulizia, non guasto.</td></tr>
+      <tr><td class="dove">Metodo</td><td>Dove nascono le prossime skill (Vivaio), quali sono ferme, quali sono nuove e in prova (Banco di prova), quanto lavoro è delegato agli orchestratori, cosa c'è in coda da costruire.</td></tr>
+      <tr><td class="dove">Attrito ed esecuzione</td><td>Quanto lavoro consegnato torna indietro? Autonomia dati, giri di revisione, prima stesura buona, consegne a settimana, sessioni sanguisuga, consumi del modello.</td></tr>
+      <tr><td class="dove">Consigli</td><td>La lista delle azioni suggerite, filtrabile per tag (MCP, Skill, Clienti, Metodo, Consumi…). Le voci marcate «ora» nascono dai dati di oggi; le altre sono buone abitudini sempre valide.</td></tr>
+      <tr><td class="dove">Controlli periodici</td><td>I check ricorrenti (con cadenza), l'ultimo esito e quando tocca rifarli.</td></tr>
+      <tr><td class="dove">Flussi di lavoro</td><td>Le mappe dei processi reali: chi fa cosa in ogni fase (tu, una skill, un servizio esterno) e con che frequenza. In testa, le barre «Sessioni per divisione del lavoro» (SEO &amp; AEO, Video &amp; YouTube, Gestione clienti…): ogni flusso porta il chip della sua divisione e la barra dei tag filtra le card. Una divisione con poche sessioni e nessun flusso codificato è il prossimo territorio da industrializzare.</td></tr>
+      <tr><td class="dove">Orchestratori e agenti</td><td>Le regie tra skill esistenti e le fasi di lavoro candidate a diventare agenti automatici.</td></tr>
+      <tr><td class="dove">Skill / Progetti / Uso</td><td>L'inventario: tutte le skill con il loro stato tecnico, i progetti con l'ultima attività, le classifiche d'uso di skill e connettori negli ultimi 30 giorni.</td></tr>
+      <tr><td class="dove">MCP e plugin</td><td>Lo stato dei connettori esterni e dei plugin installati.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="esempi">
+  <h2><span class="n">4.</span>Esempi di lettura, con i dati della demo</h2>
+  <p class="sub">Cinque situazioni prese dalla dashboard demo (la stessa che vedi nella pagina di esempio), lette passo per passo.</p>
+
+  <h3>Esempio 1 — Scomporre la Salute per trovare la leva giusta</h3>
+  <div class="tile">
+    <div class="tl">Salute dello studio</div>
+    <div class="tv">81<span class="u">/100</span><span class="pill flat">stabile</span></div>
+    <div class="tn">0,40·Metodo 76 + 0,30·Strumenti 85 + 0,30·Copertura 83</div>
+  </div>
+  <p><strong>Lettura.</strong> 81 è verde, ma al limite. La nota dice da dove viene il punteggio: Metodo 76, Strumenti 85, Copertura 83. Il numero più basso è il Metodo, che è anche quello che pesa di più (40%). <strong>Interpretazione:</strong> se vuoi far salire la Salute, il modo più efficiente non è sistemare gli strumenti, ma far passare più sessioni dai flussi codificati — ogni punto di Metodo vale 0,4 punti di Salute, contro 0,3 degli altri due ingredienti.</p>
+
+  <h3>Esempio 2 — Un cliente freddo è una telefonata, non un numero</h3>
+  <div class="tile">
+    <div class="tl">Clienti freddi</div>
+    <div class="tv">1<span class="pill flat">stabile</span></div>
+    <div class="tn">B&amp;B Riviera</div>
+  </div>
+  <p><strong>Lettura.</strong> Un cliente attivo non ha attività da più di 14 giorni, e la nota dice chi è: B&amp;B Riviera. Questo stesso dato abbassa la Copertura clienti (83 invece di 100) e quindi la Salute. <strong>Interpretazione:</strong> la dashboard genera anche il consiglio corrispondente nella sezione Consigli («B&amp;B Riviera è fermo da 21 giorni: una call o un contenuto questa settimana vale più di qualsiasi metrica»). L'azione è fuori dalla dashboard: sentire il cliente.</p>
+
+  <h3>Esempio 3 — Perché Strumenti vale 85 e non 100</h3>
+  <div class="tile">
+    <div class="tl">Da riparare</div>
+    <div class="tv">1<span class="pill flat">stabile</span></div>
+    <div class="tn">alert che toccano la salute</div>
+  </div>
+  <p><strong>Lettura.</strong> C'è un problema aperto. Nella card «Da riparare» si scopre quale: l'autorizzazione del connettore «SEO Tool (keyword)» è scaduta, e siccome è stato usato di recente pesa −15 sul punteggio Strumenti. Ecco spiegato l'85 dell'esempio 1: 100 − 15. <strong>Interpretazione:</strong> riautorizzando il connettore (con <code>/mcp</code> in sessione), Strumenti torna a 100 e la Salute sale di 4–5 punti. Nota il contrasto: le autorizzazioni scadute di servizi <em>mai usati</em> non finiscono qui ma in «Decisioni in sospeso», e non tolgono punti — un servizio che non usi non è un guasto, è una decisione da prendere.</p>
+
+  <h3>Esempio 4 — Prima stesura buona: sopra soglia, nessuna azione</h3>
+  <p>Nella card Attrito ed esecuzione: <strong>Prima stesura buona 85%</strong> — 34 consegne su 40 uscite giuste al primo colpo; delle altre, 5 corrette o integrate in chat, 1 ripresa in un'altra sessione, 0 corrette a mano.</p>
+  <p><strong>Lettura.</strong> L'85% è sopra la soglia di attenzione del 60%, quindi nessun consiglio scatta: va bene così. <strong>Interpretazione:</strong> se scendesse sotto il 60%, comparirebbe il consiglio di travasare le correzioni ricorrenti nel CLAUDE.md del progetto o nella skill — scriverle una volta lì costa meno che ripeterle in chat a ogni consegna. Occhio al limite dichiarato: la metrica non distingue una correzione («rifallo») da un'integrazione («aggiungi anche…»), e non vede le modifiche fatte sulla copia caricata su Google Drive.</p>
+
+  <h3>Esempio 5 — Leggere il costo per consegna</h3>
+  <div class="tile">
+    <div class="tl">Costo per consegna</div>
+    <div class="tv">2.63<span class="u"> €</span><span class="pill flat">stabile</span></div>
+    <div class="tn">41.85 $ ≈ 36.83 € (cambio BCE del giorno) per 14 consegne · token: 214k in · 168k out · 15.6M cache</div>
+  </div>
+  <p><strong>Lettura.</strong> La telemetria ha registrato 41,85 $ di consumo di modello per 14 consegne: 2,63 € a consegna al cambio BCE del giorno. La parte token dice com'è composta la spesa: 214.000 token di input, 168.000 di output e ben 15,6 milioni di cache — e la cache costa una frazione dell'input pieno, quindi un numero di cache alto è un <em>buon</em> segno, non un allarme. <strong>Interpretazione:</strong> la media diventa affidabile man mano che le consegne coperte si accumulano. Il confronto utile è il trend nelle settimane, non il singolo giorno.</p>
+</section>
+
+<section id="soglie">
+  <h2><span class="n">5.</span>Tutte le soglie e i consigli automatici</h2>
+  <p class="sub">L'elenco completo degli automatismi: quando scattano e cosa suggeriscono. È la sezione da consultare quando compare un avviso e vuoi sapere «perché me lo sta dicendo».</p>
+
+  <div class="twrap"><table>
+    <caption>Salute e tile <span class="cs">· il cruscotto in alto</span></caption>
+    <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Salute dello studio</td><td class="soglia">≥ 80 · 60–79 · &lt; 60</td><td>Chiave di lettura: in salute · da tenere d'occhio · serve un intervento. La nota mostra sempre i tre ingredienti per capire quale sta pesando.</td></tr>
+      <tr><td class="dove">Pillola di variazione</td><td class="soglia">± 0,5</td><td>Variazione sotto 0,5 rispetto allo scan precedente = «stabile»; oltre, pillola verde o rossa secondo la direzione buona della metrica (per Clienti freddi, Costo e Da riparare scendere è un bene).</td></tr>
+      <tr><td class="dove">Costo per consegna</td><td class="soglia">≥ 1 consegna coperta</td><td>La tile passa da «Peso per consegna» (KB, indicatore sostitutivo) a «Costo per consegna» (€) appena la telemetria copre almeno una consegna. Cambio BCE del giorno; lo storico resta in dollari.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="twrap"><table>
+    <caption>Alert «Da riparare» <span class="cs">· i pesi sottratti al punteggio Strumenti (che parte da 100)</span></caption>
+    <thead><tr><th>Problema</th><th>Peso</th><th>Cosa succede / cosa ti dice</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Livello critico</td><td class="soglia">−40</td><td>Guasto strutturale grave (es. un controllo periodico fallito a livello critico).</td></tr>
+      <tr><td class="dove">Livello serio</td><td class="soglia">−25</td><td>Es. skill con symlink mancante o incoerente (la skill è invisibile a Claude Code), connettore MCP con un problema di configurazione.</td></tr>
+      <tr><td class="dove">Livello attenzione</td><td class="soglia">−10</td><td>Es. skill o progetto non indicizzati in CLAUDE.md, progetto senza CLAUDE.md, cartella anomala tra le skill, controllo periodico con esito «attenzione».</td></tr>
+      <tr><td class="dove">Autorizzazione MCP scaduta, ma il servizio serve</td><td class="soglia">−15</td><td>Scatta solo se il servizio è stato usato negli ultimi 30 giorni <em>oppure</em> è una dipendenza di un flusso codificato. Consiglio: riattivala con <code>/mcp</code> o dalle impostazioni claude.ai.</td></tr>
+      <tr><td class="dove">Autorizzazione scaduta su servizio mai usato</td><td class="soglia">0 (nessuna penalità)</td><td>Va in «Decisioni in sospeso»: «collegalo o scollegalo». Non è un problema di salute, è mancato utilizzo.</td></tr>
+      <tr><td class="dove">Servizio claude.ai collegato ma mai usato in 30 giorni</td><td class="soglia">0 (nessuna penalità)</td><td>Va in «Decisioni in sospeso»: «serve davvero?». Pulizia, non guasto.</td></tr>
+      <tr><td class="dove">Sonda telemetria muta</td><td class="soglia">&gt; 2 giorni</td><td>Se le sessioni continuano ma i dati di costo non arrivano da più di 2 giorni: alert con il suggerimento di riavvio della sonda (configurabile: <code>telemetry.restart_hint</code>; vedi <code>telemetry/README.md</code> del repo).</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="twrap"><table>
+    <caption>Clienti <span class="cs">· copertura e churn prevention</span></caption>
+    <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Cliente freddo</td><td class="soglia">&gt; 14 giorni</td><td>Un cliente senza alcuna attività da più di 14 giorni: entra nella tile Clienti freddi, abbassa la Copertura (e quindi la Salute) e genera il consiglio «una call o un contenuto questa settimana vale più di qualsiasi metrica». Il progetto-hub (voce <code>hub_project</code> del config) non conta: non è un cliente.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="twrap"><table>
+    <caption>Metodo <span class="cs">· dove nascono e muoiono le automazioni</span></caption>
+    <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Vivaio</td><td class="soglia">≥ 3 volte in 30 giorni</td><td>Lo stesso tipo di consegna fatta «a mano libera» (stesso progetto, stesso formato, in sessioni senza skill) si ripete almeno 3 volte: la procedura viene rispiegata a ogni sessione, e conviene fissarla in una skill — risultato costante, sessioni più corte, Quota di metodo che sale. Per farlo: di' in chat «creiamo una skill per questo lavoro»; si progetta con skill-creator, si collauda su un caso reale, e dal giro dopo esce dal Vivaio.</td></tr>
+      <tr><td class="dove">Automazioni ferme</td><td class="soglia">0 usi in 30 giorni</td><td>Skill mai usata nella finestra (con 7 giorni di grazia dalla creazione: una skill appena nata non è «ferma»). Consiglio: rilanciala con un caso reale o archiviala.</td></tr>
+      <tr><td class="dove">Banco di prova</td><td class="soglia">≤ 60 giorni di vita</td><td>Le skill create di recente restano sotto osservazione ROI: la card mostra età e numero di usi, per capire se l'investimento sta rendendo.</td></tr>
+      <tr><td class="dove">Fase candidata ad agente</td><td class="soglia">≥ 2 sessioni · ≥ 50% del flusso · media ≥ 8 azioni</td><td>Una fase di un flusso svolta da servizi esterni o ricerche web, ricorrente, pesante e senza un tuo checkpoint in mezzo: candidata a girare da sola come agente in background. Consiglio: «quando il flusso torna a girare, valutiamo un agente».</td></tr>
+      <tr><td class="dove">Orchestratore da creare</td><td class="soglia">sequenze ricorrenti</td><td>Skill che vengono usate spesso in sequenza nella stessa sessione: candidata una skill-regia che le concateni. Le candidature contano nella «Coda investimenti».</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="twrap"><table>
+    <caption>Attrito ed esecuzione <span class="cs">· quanto lavoro torna indietro</span></caption>
+    <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Prima stesura buona</td><td class="soglia">&lt; 60% (su ≥ 5 consegne)</td><td>Sotto il 60% la dashboard ti suggerisce di travasare le correzioni ricorrenti nel CLAUDE.md del cliente o nella skill: scriverle una volta lì costa meno che ripeterle in chat. La soglia è volutamente bassa perché la metrica conta anche le integrazioni, non solo le correzioni.</td></tr>
+      <tr><td class="dove">Autonomia dati</td><td class="soglia">&lt; 50% (su ≥ 3 sessioni)</td><td>Più della metà delle sessioni con dati esterni parte da file esportati a mano: la dashboard suggerisce di guardare quale fonte importi più spesso e coprirla con un connettore MCP (o uno script) per eliminare il copia-incolla.</td></tr>
+      <tr><td class="dove">Sessione sanguisuga</td><td class="soglia">&gt; 250 KB · ≥ 3 giri · 0 consegne</td><td>Diario pesante, tante richieste, nessun file consegnato. Consiglio: se il lavoro rinasce, spezzalo in sessioni più piccole o passa da una skill. Ne vengono mostrate al massimo 3, le più pesanti.</td></tr>
+      <tr><td class="dove">Giri di revisione</td><td class="soglia">nessuna soglia fissa</td><td>Media dei tuoi messaggi dopo la prima consegna. Non fa scattare consigli: si legge in tendenza — se cresce, il brief o la skill vanno raffinati.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="twrap"><table>
+    <caption>Regole di misura <span class="cs">· come vengono classificate le consegne</span></caption>
+    <thead><tr><th>Classificazione</th><th>Regola</th><th>Cosa significa</th></tr></thead>
+    <tbody>
+      <tr><td class="dove">Corretta in chat</td><td class="soglia">riscritta dopo un tuo messaggio</td><td>Il file è stato riscritto nella stessa sessione dopo un tuo intervento: la prima stesura non era definitiva (o hai chiesto un'integrazione).</td></tr>
+      <tr><td class="dove">Ripresa</td><td class="soglia">tra 1 ora e 7 giorni</td><td>Il file è stato riscritto in un'<em>altra</em> sessione entro 7 giorni dalla consegna (i file cumulativi, tipo le content bank, rientrano qui per natura).</td></tr>
+      <tr><td class="dove">Corretta a mano</td><td class="soglia">&gt; 1 ora dopo</td><td>Il file risulta modificato sul disco più di un'ora dopo l'ultima scrittura di Claude: la modifica è considerata tua.</td></tr>
+      <tr><td class="dove">Consegne / settimana</td><td class="soglia">per file, non per salvataggio</td><td>Ogni file consegnato conta una volta sola, anche se è stato salvato più volte.</td></tr>
+      <tr><td class="dove">Divisioni del lavoro</td><td class="soglia">1–2 tag per flusso</td><td>Ogni flusso appartiene a una o due divisioni (la prima è la principale); la mappa vive nel <code>config.json</code> (voce <code>flow_tags</code>). Un flusso con due divisioni conta in entrambe le barre. Le skill-attrezzo (xlsx, dataviz…) non dicono la divisione: confluiscono nel Lavoro libero. «Da classificare» = flusso nuovo senza tag: il segnale per assegnargliene uno nel config.</td></tr>
+      <tr><td class="dove">Storico e confronti</td><td class="soglia">1 riga/giorno · max 400 giorni</td><td>Ogni scan salva la giornata (l'ultimo scan del giorno vince). Il Confronto periodi media i giorni registrati su finestre di 7, 14 o 30 giorni; «—» = nessuno scan in quel periodo.</td></tr>
+      <tr><td class="dove">Andamento (backfill)</td><td class="soglia">≥ 3 sessioni/settimana</td><td>Per il periodo precedente allo storico, la Quota di metodo è ricostruita dai diari settimana per settimana, solo per le settimane con almeno 3 sessioni operative.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="glossario">
+  <h2><span class="n">6.</span>Glossario</h2>
+  <p class="sub">I termini della dashboard, in ordine alfabetico.</p>
+  <dl>
+    <div><dt>Agente</dt><dd>Un esecutore automatico a cui delegare una fase di lavoro pesante e ripetitiva che non richiede decisioni umane in mezzo (es. raccogliere dati da più fonti). I checkpoint — l'ok al titolo, l'ok al brief — restano sempre tuoi.</dd></div>
+    <div><dt>Attrito</dt><dd>Tutto il lavoro consegnato che «torna indietro»: correzioni, giri di revisione, riprese, passaggi manuali. La card omonima lo misura da cinque angoli diversi.</dd></div>
+    <div><dt>Autonomia dati</dt><dd>Percentuale di sessioni con dati esterni che li hanno raccolti da sole via MCP, senza bisogno di file esportati a mano (CSV, Excel) e incollati in chat.</dd></div>
+    <div><dt>Backfill</dt><dd>Ricostruzione all'indietro di un dato storico: nel grafico Andamento, i punti precedenti alla nascita dello storico sono ricavati dai diari di sessione ancora conservati.</dd></div>
+    <div><dt>Banco di prova</dt><dd>Le skill create negli ultimi 60 giorni, osservate per capire se l'investimento rende: quanti giorni di vita hanno e quante volte sono state usate.</dd></div>
+    <div><dt>CLAUDE.md</dt><dd>Il file di istruzioni permanenti di un progetto o cliente: tono di voce, personas, convenzioni, correzioni ricorrenti. Claude Code lo legge all'inizio di ogni sessione — per questo travasarci le correzioni che si ripetono le elimina alla radice.</dd></div>
+    <div><dt>Cliente freddo</dt><dd>Cliente attivo senza alcuna attività (sessioni o consegne) da più di 14 giorni. Segnale di prevenzione: meglio una call adesso che un cliente perso dopo.</dd></div>
+    <div><dt>Consegna</dt><dd>Un file prodotto e salvato nella cartella di un progetto durante una sessione: un report, un articolo, un Excel. È l'unità di misura del lavoro che esce dallo studio.</dd></div>
+    <div><dt>Copertura clienti</dt><dd>Percentuale di clienti attivi con attività negli ultimi 14 giorni. Uno dei tre ingredienti della Salute (peso 30%).</dd></div>
+    <div><dt>Diario di sessione</dt><dd>Il registro automatico di tutto ciò che accade in una sessione di Claude Code (messaggi, strumenti usati, file scritti). È la materia prima da cui lo scanner ricava quasi tutte le metriche.</dd></div>
+    <div><dt>Divisione del lavoro</dt><dd>L'area professionale a cui appartiene un flusso: SEO &amp; AEO, Content, Advertising, Social, Video &amp; YouTube, Strategia, Gestione clienti, Personal Brand, Officina del metodo. Ogni flusso porta 1–2 divisioni (chip sulla card); le barre in testa alla card Flussi mostrano quante sessioni assorbe ciascuna. «Officina del metodo» è il lavoro sul sistema stesso (dashboard, skill nuove, configurazione), distinto dal lavoro per i clienti; «Da classificare» segnala un flusso nuovo a cui va assegnata la divisione.</dd></div>
+    <div><dt>Finestra</dt><dd>Il periodo di riferimento dei dati: 30 giorni, con le date esatte nell'intestazione della pagina.</dd></div>
+    <div><dt>Flusso codificato</dt><dd>Un processo di lavoro con una ricetta scritta: una skill o una catena di skill. Il contrario del «lavoro libero», fatto a mano libera senza ricetta.</dd></div>
+    <div><dt>Giri di revisione</dt><dd>Quanti tuoi messaggi servono in media, dopo la prima consegna, per arrivare alla versione definitiva. Più è basso, migliore era il brief (o la skill).</dd></div>
+    <div><dt>MCP</dt><dd>Model Context Protocol: lo standard con cui Claude si collega a servizi esterni (Ubersuggest, Google Calendar, Brevo…). Nella dashboard «un MCP» è uno di questi connettori.</dd></div>
+    <div><dt>Orchestratore</dt><dd>Una skill-regia che concatena più skill in un unico flusso (es. dalla keyword all'articolo pubblicabile), con i tuoi checkpoint tra una fase e l'altra. Il «Livello di delega» misura quante sessioni sono guidate da un orchestratore.</dd></div>
+    <div><dt>Prima stesura buona</dt><dd>Percentuale di consegne uscite giuste al primo colpo: mai riscritte dopo un tuo messaggio in chat, né riprese in un'altra sessione entro 7 giorni, né corrette a mano. Include un margine di ambiguità dichiarato: un'integrazione conta come una correzione.</dd></div>
+    <div><dt>Quota di metodo</dt><dd>Percentuale di sessioni operative passate da un flusso codificato. È la misura dell'industrializzazione del metodo di lavoro e l'ingrediente più pesante della Salute (40%).</dd></div>
+    <div><dt>Salute dello studio</dt><dd>Il punteggio principale (0–100): 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti. Verde da 80 in su, giallo tra 60 e 79, rosso sotto 60.</dd></div>
+    <div><dt>Sessione operativa</dt><dd>Una sessione di Claude Code in cui si lavora davvero (si producono analisi, file, consegne). Le chat di sola conversazione sono escluse da tutte le percentuali.</dd></div>
+    <div><dt>Sessione sanguisuga</dt><dd>Una sessione che consuma molto (diario oltre 250 KB), chiede tanti giri (3 o più) e non consegna nulla. Da spezzare in sessioni più piccole o da codificare in una skill.</dd></div>
+    <div><dt>Skill</dt><dd>Una ricetta scritta che insegna a Claude Code un lavoro ripetibile (es. «articolo-blog-seo»). Vive nella cartella skill del workspace (o direttamente in <code>~/.claude/skills</code>) e si attiva per nome.</dd></div>
+    <div><dt>Sonda di telemetria</dt><dd>Il processo locale che registra i consumi reali del modello (token e dollari) per ogni richiesta. Da qui arriva il Costo per consegna; se tace per più di 2 giorni scatta un alert.</dd></div>
+    <div><dt>Storico</dt><dd>Il file che accumula una riga di metriche al giorno, a ogni scan. Alimenta il grafico Andamento e il Confronto periodi.</dd></div>
+    <div><dt>Strumenti (punteggio)</dt><dd>Il secondo ingrediente della Salute: parte da 100 e perde punti solo per i problemi su ciò che si usa davvero (i pesi sono nella sezione 5). Un servizio mai usato con l'autorizzazione scaduta non toglie punti.</dd></div>
+    <div><dt>Symlink</dt><dd>Il collegamento tecnico che rende visibile a Claude Code una skill del workspace. Se manca o punta altrove, la skill esiste ma è invisibile: per questo è un alert serio.</dd></div>
+    <div><dt>Token (input · output · cache)</dt><dd>L'unità di misura del consumo del modello: input = ciò che il modello legge, output = ciò che scrive, cache = contesto riletto a costo molto ridotto. Un valore di cache alto è un segno di efficienza, non di spreco.</dd></div>
+    <div><dt>Vivaio</dt><dd>La zona della card Metodo dove compare il lavoro «a mano libera» (fatto in sessioni senza skill) che si ripete: almeno 3 consegne simili in 30 giorni per lo stesso progetto. È il vivaio delle prossime skill: ogni voce è una procedura che oggi viene rispiegata a ogni sessione e che una skill fisserebbe una volta per tutte.</dd></div>
+  </dl>
+</section>
+
+<section id="limiti">
+  <h2><span class="n">7.</span>Cosa la dashboard non vede</h2>
+  <p class="sub">I limiti dichiarati, per non sovra-interpretare i numeri.</p>
+  <ul>
+    <li><strong>Le modifiche su Google Drive.</strong> Se una consegna viene corretta sulla copia caricata su Drive, da qui non si vede: la «Prima stesura buona» è leggermente ottimista per costruzione.</li>
+    <li><strong>Correzione o integrazione?</strong> Un file riscritto dopo un tuo messaggio conta comunque come «non buono alla prima», anche se il messaggio era «aggiungi una sezione» e non «rifallo». La soglia del consiglio (60%) è bassa apposta.</li>
+    <li><strong>Lo stato vero dei connettori.</strong> La dashboard legge le cache locali del Mac: per lo stato in tempo reale di un MCP, il comando <code>/mcp</code> in sessione è la fonte autorevole.</li>
+    <li><strong>I costi partono dalla sonda.</strong> Il Costo per consegna copre solo il periodo da quando la telemetria è attiva; prima di allora vale il proxy in KB.</li>
+    <li><strong>Un giorno solo dice poco.</strong> Le medie (costo, giri, conformità) diventano affidabili con l'accumulo: la lettura giusta è il confronto tra periodi, non il valore del singolo scan.</li>
+  </ul>
+  <div class="footer">
+    <p>Guida alla Claude Studio Dashboard · gli esempi usano i dati della <a href="index.html">demo</a> (dati di fantasia).</p>
+    <p>Per aggiornare la dashboard: di' «aggiorna la dashboard» in una sessione di Claude Code (skill <code>dashboard-update</code>). Le soglie citate qui vivono nel <code>config.json</code> (sezione <code>thresholds</code>): se le cambi, tieni allineata anche questa guida.</p>
+  </div>
+</section>
+
+</div>
