@@ -1,0 +1,79 @@
+{
+  "workspace": "/Users/tuonome/Documents/Claude",
+
+  "projects_dir": "Projects",
+  "skills_dir": "SKILL",
+  "index_file": "CLAUDE.md",
+  "hub_project": "Studio",
+  "output_dir": "",
+
+  "brand": {
+    "title": "Dashboard Workspace",
+    "subtitle": "Mario Rossi · Consulente"
+  },
+
+  "window_days": 30,
+  "currency": "EUR",
+
+  "thresholds": {
+    "freddo_giorni": 14,
+    "grace_skill_giorni": 7,
+    "banco_giorni": 60,
+    "soglia_vivaio": 3,
+    "agent_min_events": 8,
+    "margine_scrittura_sec": 3600,
+    "rilavorazione_giorni": 7,
+    "sanguisuga_kb": 250,
+    "sanguisuga_giri": 3
+  },
+
+  "mcp_labels": {
+    "claude_ai_Ubersuggest_MCP": "Ubersuggest (keyword)",
+    "claude_ai_Google_Calendar": "Google Calendar"
+  },
+
+  "flow_names": {
+    "articolo-blog-seo": "Dal brief all'articolo del blog",
+    "report-mensile-cliente": "Report mensile per il cliente"
+  },
+
+  "flow_tags": {
+    "articolo-blog-seo": ["Content", "SEO & AEO"],
+    "report-mensile-cliente": ["Gestione clienti"]
+  },
+
+  "flow_phases": {
+    "articolo-blog-seo": [
+      {"label": "Brief del cliente e scelta della keyword", "kind": "tu"},
+      {"label": "Raccolta dati keyword", "kind": "mcp",
+       "tool": "Ubersuggest",
+       "detect": ["mcp:claude_ai_Ubersuggest_MCP"]},
+      {"label": "Stesura dell'articolo ottimizzato", "kind": "skill",
+       "tool": "articolo-blog-seo", "detect": ["skill:articolo-blog-seo"]},
+      {"label": "Consegna nella cartella cliente (.md)", "kind": "out",
+       "detect": ["out"]}
+    ]
+  },
+
+  "checks": [
+    {
+      "name": "Spec API del servizio X",
+      "what": "l'API su cui poggia il mio server MCP è cambiata?",
+      "cadence": "mensile (a inizio sessione)",
+      "log": "~/percorso/spec_watch.log",
+      "stamp": "~/percorso/.last_spec_check",
+      "codes": {
+        "0": ["good", "ok — nessun cambiamento"],
+        "10": ["warning", "API cambiata: server da rivedere"],
+        "1": ["serious", "errore di rete: riprova alla prossima sessione"]
+      }
+    }
+  ],
+
+  "telemetry": {
+    "enabled": true,
+    "logs": ["~/.claude/otel/otel_probe.1.jsonl",
+             "~/.claude/otel/otel_probe.jsonl"],
+    "restart_hint": "riavvia la sonda: launchctl load ~/Library/LaunchAgents/com.example.claude-otel-probe.plist"
+  }
+}

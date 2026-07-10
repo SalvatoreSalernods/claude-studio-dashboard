@@ -1,0 +1,14 @@
+{
+  "name": "claude-studio-dashboard",
+  "owner": {
+    "name": "Salvatore Salerno",
+    "url": "https://github.com/SalvatoreSalernods"
+  },
+  "plugins": [
+    {
+      "name": "claude-studio-dashboard",
+      "source": "./",
+      "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali, quota di metodo, clienti freddi, flussi e consigli. Setup guidato con la skill dashboard-setup."
+    }
+  ]
+}
