@@ -43,8 +43,9 @@ L'URL stabile è in `artifact-url.txt` accanto al config.
 
 ## Passo 4 — Racconta cosa è cambiato
 
-Riporta in chat, in linguaggio semplice: le 5 tile (Salute, Quota di metodo,
-Clienti freddi, Costo/Peso per consegna, Da riparare) con le variazioni, e
+Riporta in chat, in linguaggio semplice: le 5 tile (Indice operativo, Quota di
+metodo, Clienti da verificare, Costo/Peso per consegna, Da riparare) con le
+variazioni, e
 l'alert più importante se c'è. Non incollare tutto il dump: seleziona.
 
 ## Variante demo (screenshot)

@@ -8,7 +8,7 @@
     {
       "name": "claude-studio-dashboard",
       "source": "./",
-      "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali, quota di metodo, clienti freddi, flussi e consigli. Setup guidato con la skill dashboard-setup."
+      "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali, quota di metodo, clienti da verificare, flussi e consigli. Setup guidato con la skill dashboard-setup."
     }
   ]
 }

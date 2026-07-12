@@ -161,12 +161,12 @@
   <h2><span class="n">2.</span>I 5 numeri in alto (le tile)</h2>
   <p class="sub">Il riassunto in una riga: se hai 30 secondi, guarda solo queste.</p>
 
-  <h3>Salute dello studio (0–100)</h3>
-  <p>È il numero principale: un punteggio unico che combina tre ingredienti, ciascuno col suo peso.</p>
+  <h3>Indice operativo (0–100)</h3>
+  <p>È il numero principale: un punteggio unico che combina tre ingredienti, ciascuno col suo peso. Va letto come un semaforo, non come una misura di precisione: i pesi sono una scelta progettuale dichiarata, e il pallino colorato accanto al numero dice subito in che fascia sei.</p>
   <div class="callout">
     <p class="ct">La formula</p>
-    <p><strong>Salute = 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti</strong></p>
-    <p>Metodo = % di sessioni operative dentro flussi codificati · Strumenti = 100 meno le penalità dei problemi su ciò che usi davvero · Copertura = % di clienti attivi negli ultimi 14 giorni.</p>
+    <p><strong>Indice = 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti</strong></p>
+    <p>Metodo = % di sessioni operative dentro flussi codificati · Strumenti = 100 meno le penalità dei problemi su ciò che usi davvero · Copertura = % di clienti con attività entro la loro cadenza attesa (14 giorni, salvo cadenze personalizzate).</p>
   </div>
   <p>Chiave di lettura concordata:</p>
   <div class="sem">
@@ -177,20 +177,20 @@
   <p>La nota sotto il numero mostra sempre i tre ingredienti: così vedi subito <em>quale</em> dei tre sta tirando giù il punteggio, senza fare conti.</p>
 
   <h3>Quota di metodo (%)</h3>
-  <p>Su 100 sessioni di lavoro vero (le chat di sola conversazione non contano), quante sono passate da un flusso codificato — una skill, una pipeline — invece che dal lavoro «a mano libera». Più è alta, più il metodo di lavoro è industrializzato: ripetibile, delegabile, meno costoso. È l'ingrediente che pesa di più nella Salute (40%).</p>
+  <p>Su 100 sessioni di lavoro vero (le chat di sola conversazione non contano), quante sono passate da un flusso codificato — una skill, una pipeline — invece che dal lavoro «a mano libera». Più è alta, più il metodo di lavoro è industrializzato: ripetibile, delegabile, meno costoso. È l'ingrediente che pesa di più nell'Indice operativo (40%).</p>
 
-  <h3>Clienti freddi (numero)</h3>
-  <p>Quanti clienti attivi non hanno <em>nessuna</em> attività da più di 14 giorni. L'ideale è zero. La nota elenca i nomi: è la lista delle telefonate da fare. Qui scendere è un bene: la pillola diventa verde quando il numero cala.</p>
+  <h3>Clienti da verificare (numero)</h3>
+  <p>Quanti clienti sono fermi oltre la loro <strong>cadenza attesa</strong>: nessuna attività da più di 14 giorni oppure — per chi ha un ritmo diverso (mensili, stagionali, in pausa) — oltre la cadenza fissata per quel cliente nel config (voce <code>cadenza_clienti</code>). L'ideale è zero. La nota elenca i nomi: è la lista delle telefonate da fare. Qui scendere è un bene: la pillola diventa verde quando il numero cala.</p>
 
   <h3>Costo per consegna (€) — oppure Peso per consegna (KB)</h3>
-  <p>Quanto costa in media, in consumo di modello, ogni file consegnato. Il costo in euro compare quando la sonda di telemetria ha coperto almeno una consegna; il cambio dollaro→euro è quello ufficiale BCE del giorno, indicato nella nota. Se la telemetria non ha ancora dati, la tile mostra il vecchio indicatore sostitutivo: il peso del diario di sessione in KB diviso per le consegne. Questo numero <strong>non entra</strong> nella formula della Salute: misura un costo, non un problema.</p>
+  <p>Quanto costa in media, in consumo di modello, ogni file consegnato. Il costo in euro compare quando la sonda di telemetria ha coperto almeno una consegna; il cambio dollaro→euro è quello ufficiale BCE del giorno, indicato nella nota. Se la telemetria non ha ancora dati, la tile mostra il vecchio indicatore sostitutivo: il peso del diario di sessione in KB diviso per le consegne. Questo numero <strong>non entra</strong> nella formula dell'Indice operativo: misura un costo, non un problema.</p>
 
   <h3>Da riparare (numero)</h3>
-  <p>Quanti problemi concreti toccano la salute dello studio in questo momento: una skill invisibile, un connettore rotto, un controllo periodico fallito. Ogni voce ha un peso che viene sottratto al punteggio Strumenti. Zero è lo stato normale.</p>
+  <p>Quanti problemi concreti pesano sull'Indice operativo in questo momento: una skill invisibile, un connettore rotto, un controllo periodico fallito. Ogni voce ha un peso che viene sottratto al punteggio Strumenti. Zero è lo stato normale.</p>
 
   <div class="callout">
     <p class="ct">La pillola accanto a ogni numero</p>
-    <p>Ogni tile confronta il valore con lo scan precedente: <strong>«stabile»</strong> se la variazione è minima (sotto 0,5), altrimenti verde o rossa a seconda che il movimento sia buono o cattivo <em>per quella metrica</em>. Per Clienti freddi, Costo e Da riparare, scendere è un bene.</p>
+    <p>Ogni tile confronta il valore con lo scan precedente: <strong>«stabile»</strong> se la variazione è minima (sotto 0,5), altrimenti verde o rossa a seconda che il movimento sia buono o cattivo <em>per quella metrica</em>. Per Clienti da verificare, Costo e Da riparare, scendere è un bene.</p>
   </div>
 </section>
 
@@ -200,10 +200,10 @@
   <div class="twrap"><table>
     <thead><tr><th>Sezione</th><th>A quale domanda risponde</th></tr></thead>
     <tbody>
-      <tr><td class="dove">Andamento</td><td>Come si muovono nel tempo Salute, Metodo e Copertura? (finestre da 14 giorni a 12 mesi; i punti tratteggiati prima dello storico sono ricostruiti dai diari, settimana per settimana)</td></tr>
+      <tr><td class="dove">Andamento</td><td>Come si muovono nel tempo Indice, Metodo e Copertura? (finestre da 14 giorni a 12 mesi; i punti tratteggiati prima dello storico sono ricostruiti dai diari, settimana per settimana)</td></tr>
       <tr><td class="dove">Confronto periodi</td><td>Questo periodo è andato meglio o peggio del precedente? (medie giornaliere su 7, 14 o 30 giorni; «—» = nessuno scan registrato in quel periodo)</td></tr>
-      <tr><td class="dove">Da riparare</td><td>Cosa è rotto adesso e quanto pesa sulla Salute? (passando il mouse su una voce vedi il peso, es. «pesa −15 sul punteggio Strumenti»)</td></tr>
-      <tr><td class="dove">Decisioni in sospeso</td><td>Cosa aspetta solo una scelta — collegare o scollegare un servizio mai usato? Non penalizza la Salute: è pulizia, non guasto.</td></tr>
+      <tr><td class="dove">Da riparare</td><td>Cosa è rotto adesso e quanto pesa sull'Indice? (passando il mouse su una voce vedi il peso, es. «pesa −15 sul punteggio Strumenti»)</td></tr>
+      <tr><td class="dove">Decisioni in sospeso</td><td>Cosa aspetta solo una scelta — collegare o scollegare un servizio mai usato? Non penalizza l'Indice: è pulizia, non guasto.</td></tr>
       <tr><td class="dove">Metodo</td><td>Dove nascono le prossime skill (Vivaio), quali sono ferme, quali sono nuove e in prova (Banco di prova), quanto lavoro è delegato agli orchestratori, cosa c'è in coda da costruire.</td></tr>
       <tr><td class="dove">Attrito ed esecuzione</td><td>Quanto lavoro consegnato torna indietro? Autonomia dati, giri di revisione, prima stesura buona, consegne a settimana, sessioni sanguisuga, consumi del modello.</td></tr>
       <tr><td class="dove">Consigli</td><td>La lista delle azioni suggerite, filtrabile per tag (MCP, Skill, Clienti, Metodo, Consumi…). Le voci marcate «ora» nascono dai dati di oggi; le altre sono buone abitudini sempre valide.</td></tr>
@@ -220,29 +220,29 @@
   <h2><span class="n">4.</span>Esempi di lettura, con i dati della demo</h2>
   <p class="sub">Cinque situazioni prese dalla dashboard demo (la stessa che vedi nella pagina di esempio), lette passo per passo.</p>
 
-  <h3>Esempio 1 — Scomporre la Salute per trovare la leva giusta</h3>
+  <h3>Esempio 1 — Scomporre l'Indice per trovare la leva giusta</h3>
   <div class="tile">
-    <div class="tl">Salute dello studio</div>
-    <div class="tv">81<span class="u">/100</span><span class="pill flat">stabile</span></div>
+    <div class="tl">Indice operativo</div>
+    <div class="tv"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0ca30c;margin-right:7px;vertical-align:2px"></span>81<span class="u">/100</span><span class="pill flat">stabile</span></div>
     <div class="tn">0,40·Metodo 76 + 0,30·Strumenti 85 + 0,30·Copertura 83</div>
   </div>
-  <p><strong>Lettura.</strong> 81 è verde, ma al limite. La nota dice da dove viene il punteggio: Metodo 76, Strumenti 85, Copertura 83. Il numero più basso è il Metodo, che è anche quello che pesa di più (40%). <strong>Interpretazione:</strong> se vuoi far salire la Salute, il modo più efficiente non è sistemare gli strumenti, ma far passare più sessioni dai flussi codificati — ogni punto di Metodo vale 0,4 punti di Salute, contro 0,3 degli altri due ingredienti.</p>
+  <p><strong>Lettura.</strong> Il pallino è verde, ma 81 è al limite della fascia. La nota dice da dove viene il punteggio: Metodo 76, Strumenti 85, Copertura 83. Il numero più basso è il Metodo, che è anche quello che pesa di più (40%). <strong>Interpretazione:</strong> se vuoi far salire l'Indice, il modo più efficiente non è sistemare gli strumenti, ma far passare più sessioni dai flussi codificati — ogni punto di Metodo vale 0,4 punti di Indice, contro 0,3 degli altri due ingredienti.</p>
 
-  <h3>Esempio 2 — Un cliente freddo è una telefonata, non un numero</h3>
+  <h3>Esempio 2 — Un cliente da verificare è una telefonata, non un numero</h3>
   <div class="tile">
-    <div class="tl">Clienti freddi</div>
+    <div class="tl">Clienti da verificare</div>
     <div class="tv">1<span class="pill flat">stabile</span></div>
     <div class="tn">B&amp;B Riviera</div>
   </div>
-  <p><strong>Lettura.</strong> Un cliente attivo non ha attività da più di 14 giorni, e la nota dice chi è: B&amp;B Riviera. Questo stesso dato abbassa la Copertura clienti (83 invece di 100) e quindi la Salute. <strong>Interpretazione:</strong> la dashboard genera anche il consiglio corrispondente nella sezione Consigli («B&amp;B Riviera è fermo da 21 giorni: una call o un contenuto questa settimana vale più di qualsiasi metrica»). L'azione è fuori dalla dashboard: sentire il cliente.</p>
+  <p><strong>Lettura.</strong> Un cliente è fermo oltre la sua cadenza attesa (qui il default: 14 giorni), e la nota dice chi è: B&amp;B Riviera. Questo stesso dato abbassa la Copertura clienti (83 invece di 100) e quindi l'Indice. <strong>Interpretazione:</strong> la dashboard genera anche il consiglio corrispondente nella sezione Consigli («B&amp;B Riviera è fermo da 21 giorni (cadenza attesa: ≤14gg): una call o un contenuto questa settimana vale più di qualsiasi metrica»). L'azione è fuori dalla dashboard: sentire il cliente. E se un cliente ha per contratto un ritmo più lento — un report al mese, un servizio stagionale — fissagli la sua cadenza in <code>cadenza_clienti</code> nel config: smetterà di comparire qui senza motivo.</p>
 
   <h3>Esempio 3 — Perché Strumenti vale 85 e non 100</h3>
   <div class="tile">
     <div class="tl">Da riparare</div>
     <div class="tv">1<span class="pill flat">stabile</span></div>
-    <div class="tn">alert che toccano la salute</div>
+    <div class="tn">alert che pesano sull'indice</div>
   </div>
-  <p><strong>Lettura.</strong> C'è un problema aperto. Nella card «Da riparare» si scopre quale: l'autorizzazione del connettore «SEO Tool (keyword)» è scaduta, e siccome è stato usato di recente pesa −15 sul punteggio Strumenti. Ecco spiegato l'85 dell'esempio 1: 100 − 15. <strong>Interpretazione:</strong> riautorizzando il connettore (con <code>/mcp</code> in sessione), Strumenti torna a 100 e la Salute sale di 4–5 punti. Nota il contrasto: le autorizzazioni scadute di servizi <em>mai usati</em> non finiscono qui ma in «Decisioni in sospeso», e non tolgono punti — un servizio che non usi non è un guasto, è una decisione da prendere.</p>
+  <p><strong>Lettura.</strong> C'è un problema aperto. Nella card «Da riparare» si scopre quale: l'autorizzazione del connettore «SEO Tool (keyword)» è scaduta, e siccome è stato usato di recente pesa −15 sul punteggio Strumenti. Ecco spiegato l'85 dell'esempio 1: 100 − 15. <strong>Interpretazione:</strong> riautorizzando il connettore (con <code>/mcp</code> in sessione), Strumenti torna a 100 e l'Indice sale di 4–5 punti. Nota il contrasto: le autorizzazioni scadute di servizi <em>mai usati</em> non finiscono qui ma in «Decisioni in sospeso», e non tolgono punti — un servizio che non usi non è un guasto, è una decisione da prendere.</p>
 
   <h3>Esempio 4 — Prima stesura buona: sopra soglia, nessuna azione</h3>
   <p>Nella card Attrito ed esecuzione: <strong>Prima stesura buona 85%</strong> — 34 consegne su 40 uscite giuste al primo colpo; delle altre, 5 corrette o integrate in chat, 1 ripresa in un'altra sessione, 0 corrette a mano.</p>
@@ -262,11 +262,11 @@
   <p class="sub">L'elenco completo degli automatismi: quando scattano e cosa suggeriscono. È la sezione da consultare quando compare un avviso e vuoi sapere «perché me lo sta dicendo».</p>
 
   <div class="twrap"><table>
-    <caption>Salute e tile <span class="cs">· il cruscotto in alto</span></caption>
+    <caption>Indice e tile <span class="cs">· il cruscotto in alto</span></caption>
     <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
     <tbody>
-      <tr><td class="dove">Salute dello studio</td><td class="soglia">≥ 80 · 60–79 · &lt; 60</td><td>Chiave di lettura: in salute · da tenere d'occhio · serve un intervento. La nota mostra sempre i tre ingredienti per capire quale sta pesando.</td></tr>
-      <tr><td class="dove">Pillola di variazione</td><td class="soglia">± 0,5</td><td>Variazione sotto 0,5 rispetto allo scan precedente = «stabile»; oltre, pillola verde o rossa secondo la direzione buona della metrica (per Clienti freddi, Costo e Da riparare scendere è un bene).</td></tr>
+      <tr><td class="dove">Indice operativo</td><td class="soglia">≥ 80 · 60–79 · &lt; 60</td><td>Chiave di lettura a semaforo — il pallino verde/giallo/rosso accanto al numero: in salute · da tenere d'occhio · serve un intervento. La nota mostra sempre i tre ingredienti per capire quale sta pesando.</td></tr>
+      <tr><td class="dove">Pillola di variazione</td><td class="soglia">± 0,5</td><td>Variazione sotto 0,5 rispetto allo scan precedente = «stabile»; oltre, pillola verde o rossa secondo la direzione buona della metrica (per Clienti da verificare, Costo e Da riparare scendere è un bene).</td></tr>
       <tr><td class="dove">Costo per consegna</td><td class="soglia">≥ 1 consegna coperta</td><td>La tile passa da «Peso per consegna» (KB, indicatore sostitutivo) a «Costo per consegna» (€) appena la telemetria copre almeno una consegna. Cambio BCE del giorno; lo storico resta in dollari.</td></tr>
     </tbody>
   </table></div>
@@ -289,7 +289,7 @@
     <caption>Clienti <span class="cs">· copertura e churn prevention</span></caption>
     <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
     <tbody>
-      <tr><td class="dove">Cliente freddo</td><td class="soglia">&gt; 14 giorni</td><td>Un cliente senza alcuna attività da più di 14 giorni: entra nella tile Clienti freddi, abbassa la Copertura (e quindi la Salute) e genera il consiglio «una call o un contenuto questa settimana vale più di qualsiasi metrica». Il progetto-hub (voce <code>hub_project</code> del config) non conta: non è un cliente.</td></tr>
+      <tr><td class="dove">Cliente da verificare</td><td class="soglia">&gt; 14 giorni, o la cadenza del cliente</td><td>Un cliente senza alcuna attività oltre la sua cadenza attesa: entra nella tile Clienti da verificare, abbassa la Copertura (e quindi l'Indice) e genera il consiglio «una call o un contenuto questa settimana vale più di qualsiasi metrica». La cadenza è 14 giorni di default (<code>thresholds.freddo_giorni</code>), ma si fissa cliente per cliente con <code>cadenza_clienti</code> — per i clienti mensili, stagionali o in pausa. Il progetto-hub (voce <code>hub_project</code> del config) non conta: non è un cliente.</td></tr>
     </tbody>
   </table></div>
 
@@ -341,25 +341,26 @@
     <div><dt>Backfill</dt><dd>Ricostruzione all'indietro di un dato storico: nel grafico Andamento, i punti precedenti alla nascita dello storico sono ricavati dai diari di sessione ancora conservati.</dd></div>
     <div><dt>Banco di prova</dt><dd>Le skill create negli ultimi 60 giorni, osservate per capire se l'investimento rende: quanti giorni di vita hanno e quante volte sono state usate.</dd></div>
     <div><dt>CLAUDE.md</dt><dd>Il file di istruzioni permanenti di un progetto o cliente: tono di voce, personas, convenzioni, correzioni ricorrenti. Claude Code lo legge all'inizio di ogni sessione — per questo travasarci le correzioni che si ripetono le elimina alla radice.</dd></div>
-    <div><dt>Cliente freddo</dt><dd>Cliente attivo senza alcuna attività (sessioni o consegne) da più di 14 giorni. Segnale di prevenzione: meglio una call adesso che un cliente perso dopo.</dd></div>
+    <div><dt>Cadenza attesa</dt><dd>Il ritmo di attività normale per un cliente: 14 giorni di default (<code>thresholds.freddo_giorni</code>), personalizzabile cliente per cliente nel config (voce <code>cadenza_clienti</code>) per i contratti mensili, stagionali o in pausa.</dd></div>
+    <div><dt>Cliente da verificare</dt><dd>Cliente senza alcuna attività (sessioni o consegne) oltre la sua cadenza attesa. Segnale di prevenzione, non un verdetto: meglio una call adesso che un cliente perso dopo.</dd></div>
     <div><dt>Consegna</dt><dd>Un file prodotto e salvato nella cartella di un progetto durante una sessione: un report, un articolo, un Excel. È l'unità di misura del lavoro che esce dallo studio.</dd></div>
-    <div><dt>Copertura clienti</dt><dd>Percentuale di clienti attivi con attività negli ultimi 14 giorni. Uno dei tre ingredienti della Salute (peso 30%).</dd></div>
+    <div><dt>Copertura clienti</dt><dd>Percentuale di clienti con attività entro la loro cadenza attesa. Uno dei tre ingredienti dell'Indice operativo (peso 30%).</dd></div>
     <div><dt>Diario di sessione</dt><dd>Il registro automatico di tutto ciò che accade in una sessione di Claude Code (messaggi, strumenti usati, file scritti). È la materia prima da cui lo scanner ricava quasi tutte le metriche.</dd></div>
     <div><dt>Divisione del lavoro</dt><dd>L'area professionale a cui appartiene un flusso: SEO &amp; AEO, Content, Advertising, Social, Video &amp; YouTube, Strategia, Gestione clienti, Personal Brand, Officina del metodo. Ogni flusso porta 1–2 divisioni (chip sulla card); le barre in testa alla card Flussi mostrano quante sessioni assorbe ciascuna. «Officina del metodo» è il lavoro sul sistema stesso (dashboard, skill nuove, configurazione), distinto dal lavoro per i clienti; «Da classificare» segnala un flusso nuovo a cui va assegnata la divisione.</dd></div>
     <div><dt>Finestra</dt><dd>Il periodo di riferimento dei dati: 30 giorni, con le date esatte nell'intestazione della pagina.</dd></div>
     <div><dt>Flusso codificato</dt><dd>Un processo di lavoro con una ricetta scritta: una skill o una catena di skill. Il contrario del «lavoro libero», fatto a mano libera senza ricetta.</dd></div>
     <div><dt>Giri di revisione</dt><dd>Quanti tuoi messaggi servono in media, dopo la prima consegna, per arrivare alla versione definitiva. Più è basso, migliore era il brief (o la skill).</dd></div>
+    <div><dt>Indice operativo</dt><dd>Il punteggio principale (0–100), da leggere a semaforo: 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti. Verde da 80 in su, giallo tra 60 e 79, rosso sotto 60. I pesi sono una scelta progettuale dichiarata, non una misura scientifica: la nota mostra sempre i tre ingredienti.</dd></div>
     <div><dt>MCP</dt><dd>Model Context Protocol: lo standard con cui Claude si collega a servizi esterni (Ubersuggest, Google Calendar, Brevo…). Nella dashboard «un MCP» è uno di questi connettori.</dd></div>
     <div><dt>Orchestratore</dt><dd>Una skill-regia che concatena più skill in un unico flusso (es. dalla keyword all'articolo pubblicabile), con i tuoi checkpoint tra una fase e l'altra. Il «Livello di delega» misura quante sessioni sono guidate da un orchestratore.</dd></div>
     <div><dt>Prima stesura buona</dt><dd>Percentuale di consegne uscite giuste al primo colpo: mai riscritte dopo un tuo messaggio in chat, né riprese in un'altra sessione entro 7 giorni, né corrette a mano. Include un margine di ambiguità dichiarato: un'integrazione conta come una correzione.</dd></div>
-    <div><dt>Quota di metodo</dt><dd>Percentuale di sessioni operative passate da un flusso codificato. È la misura dell'industrializzazione del metodo di lavoro e l'ingrediente più pesante della Salute (40%).</dd></div>
-    <div><dt>Salute dello studio</dt><dd>Il punteggio principale (0–100): 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura clienti. Verde da 80 in su, giallo tra 60 e 79, rosso sotto 60.</dd></div>
+    <div><dt>Quota di metodo</dt><dd>Percentuale di sessioni operative passate da un flusso codificato. È la misura dell'industrializzazione del metodo di lavoro e l'ingrediente più pesante dell'Indice operativo (40%).</dd></div>
     <div><dt>Sessione operativa</dt><dd>Una sessione di Claude Code in cui si lavora davvero (si producono analisi, file, consegne). Le chat di sola conversazione sono escluse da tutte le percentuali.</dd></div>
     <div><dt>Sessione sanguisuga</dt><dd>Una sessione che consuma molto (diario oltre 250 KB), chiede tanti giri (3 o più) e non consegna nulla. Da spezzare in sessioni più piccole o da codificare in una skill.</dd></div>
     <div><dt>Skill</dt><dd>Una ricetta scritta che insegna a Claude Code un lavoro ripetibile (es. «articolo-blog-seo»). Vive nella cartella skill del workspace (o direttamente in <code>~/.claude/skills</code>) e si attiva per nome.</dd></div>
     <div><dt>Sonda di telemetria</dt><dd>Il processo locale che registra i consumi reali del modello (token e dollari) per ogni richiesta. Da qui arriva il Costo per consegna; se tace per più di 2 giorni scatta un alert.</dd></div>
     <div><dt>Storico</dt><dd>Il file che accumula una riga di metriche al giorno, a ogni scan. Alimenta il grafico Andamento e il Confronto periodi.</dd></div>
-    <div><dt>Strumenti (punteggio)</dt><dd>Il secondo ingrediente della Salute: parte da 100 e perde punti solo per i problemi su ciò che si usa davvero (i pesi sono nella sezione 5). Un servizio mai usato con l'autorizzazione scaduta non toglie punti.</dd></div>
+    <div><dt>Strumenti (punteggio)</dt><dd>Il secondo ingrediente dell'Indice operativo: parte da 100 e perde punti solo per i problemi su ciò che si usa davvero (i pesi sono nella sezione 5). Un servizio mai usato con l'autorizzazione scaduta non toglie punti.</dd></div>
     <div><dt>Symlink</dt><dd>Il collegamento tecnico che rende visibile a Claude Code una skill del workspace. Se manca o punta altrove, la skill esiste ma è invisibile: per questo è un alert serio.</dd></div>
     <div><dt>Token (input · output · cache)</dt><dd>L'unità di misura del consumo del modello: input = ciò che il modello legge, output = ciò che scrive, cache = contesto riletto a costo molto ridotto. Un valore di cache alto è un segno di efficienza, non di spreco.</dd></div>
     <div><dt>Vivaio</dt><dd>La zona della card Metodo dove compare il lavoro «a mano libera» (fatto in sessioni senza skill) che si ripete: almeno 3 consegne simili in 30 giorni per lo stesso progetto. È il vivaio delle prossime skill: ogni voce è una procedura che oggi viene rispiegata a ogni sessione e che una skill fisserebbe una volta per tutte.</dd></div>

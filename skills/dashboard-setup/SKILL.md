@@ -50,16 +50,18 @@ domanda proponi come prima opzione quello che hai dedotto dall'esplorazione
 1. **Radice del workspace** — solo se la directory corrente non è chiaramente
    il workspace Claude Code dell'utente.
 2. **Cartella dei progetti/clienti** — proponi la candidata trovata. Spiega:
-   "è la cartella che la dashboard osserva per consegne e clienti freddi".
+   "è la cartella che la dashboard osserva per consegne e clienti da verificare".
 3. **Progetto hub** (se esiste) — la cartella che rappresenta l'utente stesso
    (knowledge base personale, materiali propri): non è un cliente e non deve
-   contare come "cliente freddo". Se nessuna cartella sembra un hub, salta.
+   finire tra i "clienti da verificare". Se nessuna cartella sembra un hub, salta.
 4. **Intestazione della pagina** — titolo e sottotitolo (es. nome · mestiere).
 5. **Valuta** dei costi — EUR (default), USD, GBP, CHF…
 
-Soglie (cliente freddo a 14 giorni, finestra 30 giorni, ecc.): NON chiederle
-al primo setup — i default vanno bene; di' solo che esistono e dove si
-cambiano (config.json, sezione `thresholds`).
+Soglie (cliente da verificare a 14 giorni, finestra 30 giorni, ecc.): NON
+chiederle al primo setup — i default vanno bene; di' solo che esistono e dove
+si cambiano (config.json, sezione `thresholds`). Se l'utente nomina clienti
+con ritmi diversi (mensili, stagionali, in pausa), digli della mappa
+`cadenza_clienti` (nome progetto → giorni di cadenza attesa).
 
 ## Passo 2 — Scrivi il config
 

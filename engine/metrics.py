@@ -4,11 +4,16 @@ Metriche decisionali della dashboard.
 
 Qui vivono i numeri che fanno prendere decisioni:
 
-  Salute dello studio (0–100) = 0,40·Metodo + 0,30·Strumenti + 0,30·Copertura
+  Indice operativo (0–100) = 0,40·Metodo + 0,30·Strumenti + 0,30·Copertura
   - Metodo    = % sessioni operative dentro flussi codificati (chat escluse)
   - Strumenti = 100 − penalità SOLO su ciò che si usa (le auth scadute su servizi
                 mai usati NON pesano: sono "decisioni in sospeso", non salute)
-  - Copertura = % clienti attivi con attività recente (soglia nel config)
+  - Copertura = % clienti con attività entro la loro cadenza attesa
+                (default thresholds.freddo_giorni, override in cadenza_clienti)
+
+  L'indice è un semaforo (verde ≥80 · giallo 60–79 · rosso <60), non una
+  misura di precisione: i pesi sono una scelta progettuale dichiarata, e la
+  nota della tile mostra sempre i tre ingredienti.
 
 Più: le misure della card Metodo (vivaio, automazioni ferme, banco di prova,
 livello di delega, coda investimenti), il proxy dei consumi (peso per consegna)
@@ -59,7 +64,7 @@ def _pct(num, den):
 
 def _delta(cur, prev, invert=False):
     """Pillola di variazione: dir 'good'/'bad'/'flat' + testo. invert=True se
-    scendere è un bene (es. peso per consegna, clienti freddi)."""
+    scendere è un bene (es. peso per consegna, clienti da verificare)."""
     if prev is None or cur is None:
         return None
     diff = round(cur - prev, 1)
@@ -196,19 +201,25 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         "sanguisughe": sanguisughe[:3],
     }
 
-    # --- copertura clienti (il progetto-hub non è un cliente)
+    # --- copertura clienti (il progetto-hub non è un cliente): ogni cliente
+    #     ha la sua cadenza attesa (cadenza_clienti), default freddo_giorni
     freddo_gg = th["freddo_giorni"]
+    cadenze = config.C.cadenza_clienti
     clienti = [p for p in projects if p["name"] != config.C.hub]
     freddi = [p["name"] for p in clienti
-              if p.get("days_since") is None or p["days_since"] > freddo_gg]
+              if p.get("days_since") is None
+              or p["days_since"] > cadenze.get(p["name"], freddo_gg)]
     copertura = _pct(len(clienti) - len(freddi), len(clienti))
 
     # --- strumenti: 100 − penalità degli alert "da riparare"
     strumenti = max(0, 100 - sum(a.get("peso", 0) for a in riparare))
 
-    salute = None
+    salute, band = None, None
     if metodo is not None and copertura is not None:
         salute = round(0.40 * metodo + 0.30 * strumenti + 0.30 * copertura)
+        band = ({"cls": "good", "text": "verde: in salute"} if salute >= 80
+                else {"cls": "warn", "text": "giallo: da tenere d'occhio"}
+                if salute >= 60 else {"cls": "bad", "text": "rosso: serve un intervento"})
 
     # --- card Metodo
     def _esempi(k, n=3):
@@ -288,19 +299,22 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
                                            invert=True),
             "note": nota}
     tiles = [
-        {"id": "salute", "label": "Salute dello studio", "value": salute,
-         "unit": "/100", "delta": _delta(salute, prev and prev.get("salute")),
+        {"id": "salute", "label": "Indice operativo", "value": salute,
+         "unit": "/100", "band": band,
+         "delta": _delta(salute, prev and prev.get("salute")),
          "note": f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} + 0,30·Copertura {copertura}"},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo, "unit": "%",
          "delta": _delta(metodo, prev and prev.get("metodo")),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
-        {"id": "freddi", "label": "Clienti freddi", "value": len(freddi), "unit": "",
+        {"id": "freddi", "label": "Clienti da verificare", "value": len(freddi), "unit": "",
          "delta": _delta(len(freddi), prev and prev.get("freddi"), invert=True),
-         "note": ", ".join(freddi) if freddi else f"tutti attivi ≤{freddo_gg}gg"},
+         "note": ", ".join(freddi) if freddi
+                 else ("tutti entro la loro cadenza attesa" if cadenze
+                       else f"tutti attivi ≤{freddo_gg}gg")},
         costo_tile,
         {"id": "riparare", "label": "Da riparare", "value": len(riparare), "unit": "",
          "delta": _delta(len(riparare), prev and prev.get("riparare"), invert=True),
-         "note": "alert che toccano la salute"},
+         "note": "alert che pesano sull'indice"},
     ]
 
     entry = {"d": oggi, "salute": salute, "metodo": metodo, "strumenti": strumenti,
@@ -337,7 +351,7 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     return {"tiles": tiles, "metodo_card": metodo_card, "attrito": attrito,
             "trend": {"points": points,
                       "series": [
-                          {"key": "salute", "label": "Salute", "color": "acc"},
+                          {"key": "salute", "label": "Indice", "color": "acc"},
                           {"key": "metodo", "label": "Metodo %", "color": "blu"},
                           {"key": "copertura", "label": "Copertura clienti %", "color": "aqua"},
                       ]},

@@ -15,6 +15,11 @@
   "window_days": 30,
   "currency": "EUR",
 
+  "cadenza_clienti": {
+    "Cliente Mensile": 35,
+    "Cliente Stagionale": 90
+  },
+
   "thresholds": {
     "freddo_giorni": 14,
     "grace_skill_giorni": 7,

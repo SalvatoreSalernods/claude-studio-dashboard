@@ -1,7 +1,7 @@
 {
   "name": "claude-studio-dashboard",
-  "version": "0.1.0",
-  "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali per consegna, quota di metodo, clienti freddi, flussi di lavoro e consigli — da una scansione locale dei metadati, zero inserimento manuale.",
+  "version": "0.2.0",
+  "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali per consegna, quota di metodo, clienti da verificare, flussi di lavoro e consigli — da una scansione locale dei metadati, zero inserimento manuale.",
   "author": {
     "name": "Salvatore Salerno",
     "url": "https://github.com/SalvatoreSalernods"

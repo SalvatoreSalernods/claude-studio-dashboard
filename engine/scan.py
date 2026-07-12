@@ -763,12 +763,14 @@ def main():
             "spezzalo in sessioni più piccole o passa da una skill.", ora=True)
     freddo_gg = config.C.th["freddo_giorni"]
     for p in projects:
+        soglia = config.C.cadenza_clienti.get(p["name"], freddo_gg)
         if p["name"] != config.C.hub and (p["days_since"] is None
-                                          or p["days_since"] > freddo_gg):
+                                          or p["days_since"] > soglia):
             giorni = p["days_since"] if p["days_since"] is not None else f"{gg}+"
             tip(["Clienti"],
-                f"{p['name']} è fermo da {giorni} giorni: una call o un contenuto "
-                "questa settimana vale più di qualsiasi metrica.", ora=True)
+                f"{p['name']} è fermo da {giorni} giorni (cadenza attesa: "
+                f"≤{soglia}gg): una call o un contenuto questa settimana vale "
+                "più di qualsiasi metrica.", ora=True)
     for tags, text in [
         (["Claude Code", "Consumi"],
          "Una sessione = un lavoro: apri una sessione nuova per ogni lavoro diverso "
@@ -857,7 +859,7 @@ def main():
 
     salute_txt = f"{met['salute']}/100" if met["salute"] is not None \
         else "— (arriva con le prime sessioni)"
-    print(f"Scan ok {data['generated']} — Salute {salute_txt} · "
+    print(f"Scan ok {data['generated']} — Indice operativo {salute_txt} · "
           f"{len(skills)} skill, {len(projects)} progetti, {len(mcp)} MCP, "
           f"{n_riparare} da riparare, {len(alerts['decidere'])} da decidere. "
           f"HTML: {html_note}")

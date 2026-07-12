@@ -135,6 +135,11 @@
   .tile .tv { font-size: 30px; font-weight: 650; margin-top: 4px; letter-spacing: -.01em; }
   .tile .tv .unit { font-size: 14px; font-weight: 500; color: var(--muted); }
   .tile .tn { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+  .tile .tv .band { display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+                    margin-right: 8px; vertical-align: 3px; }
+  .band.good { background: var(--st-good); }
+  .band.warn { background: var(--st-warning); }
+  .band.bad  { background: var(--st-critical); }
   .pill { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 999px;
           padding: 2px 8px; margin-top: 7px; }
   .pill.good { background: var(--pill-good-bg); color: var(--pill-good-tx); }
@@ -427,7 +432,15 @@ const tiles = document.getElementById('tiles');
 for (const t of DATA.decision_tiles) {
   const w = el('div', 'tile');
   w.append(el('div', 'tl', t.label));
-  const v = el('div', 'tv', t.value === null || t.value === undefined ? '—' : t.value);
+  const v = el('div', 'tv');
+  if (t.band) {
+    // semaforo: la chiave di lettura è la fascia, il numero è il dettaglio
+    const b = el('span', 'band ' + t.band.cls);
+    b.title = t.band.text;
+    v.append(b);
+  }
+  v.append(document.createTextNode(
+    t.value === null || t.value === undefined ? '—' : String(t.value)));
   if (t.unit) v.append(el('span', 'unit', t.unit));
   w.append(v);
   if (t.delta) {
@@ -486,7 +499,7 @@ function drawTrend() {
   const note = document.getElementById('trend-note');
   note.textContent = pts.length < 2
     ? 'Lo storico si accumula a ogni scansione: il grafico si popola nei prossimi giorni. I punti più vecchi della Quota di metodo sono ricostruiti a settimane dai diari ancora conservati.'
-    : 'I punti settimanali più vecchi della Quota di metodo sono ricostruiti dai diari; Salute e Copertura partono dal primo scan.';
+    : 'I punti settimanali più vecchi della Quota di metodo sono ricostruiti dai diari; Indice e Copertura partono dal primo scan.';
   if (!pts.length) return;
 
   const W = svg.clientWidth || 800, H = 240, pl = 34, pr = 46, pt = 14, pb = 26;
@@ -586,7 +599,7 @@ let rsz; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setT
 const HIST = DATA.storico || [];
 const CMP_METRICS = [
   // [chiave storico, etichetta, direzione buona (+1 su, −1 giù), unità]
-  ['salute', 'Salute dello studio', 1, ''],
+  ['salute', 'Indice operativo', 1, ''],
   ['metodo', 'Quota di metodo', 1, '%'],
   ['copertura', 'Copertura clienti', 1, '%'],
   ['conformita', 'Prima stesura buona', 1, '%'],

@@ -131,15 +131,18 @@ def build():
         segno = "+" if diff > 0 else "−"
         return {"text": f"{segno}{abs(diff)}", "dir": "good" if buono else "bad"}
 
+    band = ({"cls": "good", "text": "verde: in salute"} if salute >= 80
+            else {"cls": "warn", "text": "giallo: da tenere d'occhio"}
+            if salute >= 60 else {"cls": "bad", "text": "rosso: serve un intervento"})
     tiles = [
-        {"id": "salute", "label": "Salute dello studio", "value": salute,
-         "unit": "/100", "delta": delta("salute"),
+        {"id": "salute", "label": "Indice operativo", "value": salute,
+         "unit": "/100", "band": band, "delta": delta("salute"),
          "note": f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} "
                  f"+ 0,30·Copertura {copertura}"},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo,
          "unit": "%", "delta": delta("metodo"),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
-        {"id": "freddi", "label": "Clienti freddi", "value": 1, "unit": "",
+        {"id": "freddi", "label": "Clienti da verificare", "value": 1, "unit": "",
          "delta": {"text": "stabile", "dir": "flat"}, "note": "B&B Riviera"},
         {"id": "peso", "label": "Costo per consegna", "value": costo_consegna,
          "unit": " €", "delta": delta("costo", up_is_good=False, dec=2),
@@ -149,7 +152,7 @@ def build():
                  f"{fmt_tok(tok['cache'])} cache"},
         {"id": "riparare", "label": "Da riparare", "value": 1, "unit": "",
          "delta": {"text": "stabile", "dir": "flat"},
-         "note": "alert che toccano la salute"},
+         "note": "alert che pesano sull'indice"},
     ]
 
     # ---- inventario del freelance ideale
@@ -372,7 +375,8 @@ def build():
          "text": "Orchestratore da creare: articolo-blog-seo + audit-sito-web "
                  "(insieme in 2 sessioni)", "ora": True},
         {"tags": ["Clienti"],
-         "text": "B&B Riviera è fermo da 21 giorni: una call o un contenuto "
+         "text": "B&B Riviera è fermo da 21 giorni (cadenza attesa: ≤14gg): "
+                 "una call o un contenuto "
                  "questa settimana vale più di qualsiasi metrica.", "ora": True},
         {"tags": ["Claude Code", "Consumi"],
          "text": "Una sessione = un lavoro: apri una sessione nuova per ogni "
@@ -418,7 +422,7 @@ def build():
                       "rate_date": rate_date},
         "storico": storico,
         "trend": {"points": points,
-                  "series": [{"key": "salute", "label": "Salute", "color": "acc"},
+                  "series": [{"key": "salute", "label": "Indice", "color": "acc"},
                              {"key": "metodo", "label": "Metodo %", "color": "blu"},
                              {"key": "copertura", "label": "Copertura clienti %",
                               "color": "aqua"}]},

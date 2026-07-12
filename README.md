@@ -1,18 +1,21 @@
 # Claude Studio Dashboard
 
-**La dashboard del tuo studio professionale su Claude Code.** Uno scanner
+**Claude Studio Dashboard ti mostra dove il tuo lavoro con Claude Code è già
+sistematico, dove resta manuale e cosa conviene automatizzare.** Uno scanner
 locale legge i metadati del tuo workspace — diari di sessione, cartelle dei
-clienti, connettori, telemetria — e produce una pagina web privata con i numeri
-che servono a decidere: quanto consegni, quanto ti costa ogni consegna, quanto
-del tuo lavoro segue un metodo ripetibile, quali clienti stai trascurando, cosa
-è rotto e cosa conviene automatizzare. Zero inserimento manuale di dati.
+clienti, connettori, telemetria — e produce una pagina web privata con i
+numeri che servono a decidere. Intorno a questo nucleo, i moduli di contorno:
+quanto ti costa ogni consegna, quali clienti sono fermi oltre il loro ritmo,
+cosa è rotto negli strumenti. Zero inserimento manuale di dati.
 
-> **English** — A local, zero-dependency dashboard for professionals working
-> with Claude Code: deliveries, real cost per delivery, method quota, cold
-> clients, workflow maps and actionable advice, scanned from local metadata
-> only (no file contents, no conversation text ever leaves your machine).
-> Setup is a guided interview (`dashboard-setup` skill) that adapts to how
-> YOUR workspace is organized. UI and docs are in Italian for now.
+> **English** — A local, zero-dependency dashboard that shows where your
+> Claude Code work is already systematic, where it is still manual, and what
+> is worth automating — plus real cost per delivery, clients drifting past
+> their expected cadence, workflow maps and actionable advice. Scanned from
+> local metadata only (no file contents, no conversation text ever leaves
+> your machine). Setup is a guided interview (`dashboard-setup` skill) that
+> adapts to how YOUR workspace is organized. UI and docs are in Italian for
+> now.
 
 **[→ Demo live](https://salvatoresalernods.github.io/claude-studio-dashboard/)**
 (dati di fantasia, generati da `engine/demo.py`) ·
@@ -25,19 +28,29 @@ Le 5 tile in alto:
 
 | Tile | Domanda a cui risponde |
 |---|---|
-| **Salute dello studio** (0–100) | come sto messo, in un numero solo? `0,40·Metodo + 0,30·Strumenti + 0,30·Copertura clienti` |
+| **Indice operativo** (0–100) | come sto messo, a semaforo? verde ≥80 · giallo 60–79 · rosso <60. I pesi (`0,40·Metodo + 0,30·Strumenti + 0,30·Copertura clienti`) sono una scelta dichiarata, non una misura scientifica: la nota mostra sempre i tre ingredienti |
 | **Quota di metodo** | quanta parte del lavoro segue una ricetta scritta (skill) invece dell'improvvisazione? |
-| **Clienti freddi** | quali clienti non hanno attività da troppi giorni? (la lista delle telefonate da fare) |
+| **Clienti da verificare** | quali clienti sono fermi oltre la loro cadenza attesa? (la lista delle telefonate da fare — la cadenza si può fissare cliente per cliente) |
 | **Costo per consegna** | quanto mi costa di Claude ogni file consegnato? (telemetria reale; senza, un proxy in KB) |
 | **Da riparare** | quanti problemi concreti toccano gli strumenti in questo momento? |
 
+Il cuore della dashboard sono i due moduli sul **metodo**:
+
+- il **Vivaio** — il lavoro che ripeti a mano nelle sessioni libere,
+  individuato e proposto come candidato a diventare una skill: la parte
+  difficile dell'automazione non è scriverla, è capire cosa merita di esserlo;
+- la card **Attrito ed esecuzione** — quanto il lavoro esce bene al primo
+  colpo: prima stesura buona, giri di revisione per consegna, autonomia dati
+  (MCP vs import manuali), consegne a settimana, sessioni "sanguisuga"
+  (pesanti, tanti giri, zero consegne). È la misura più vicina alla qualità
+  operativa che si possa ottenere leggendo solo metadati.
+
 E poi: grafico di andamento con confronto tra periodi, mappe dei **flussi di
 lavoro** reali (chi fa cosa in ogni fase: tu, una skill, un servizio esterno),
-il **Vivaio** (il lavoro ripetuto a mano che merita di diventare una skill),
-le fasi candidate a diventare **agenti**, l'attrito (prima stesura buona, giri
-di revisione, sessioni sanguisuga), inventario di skill/progetti/MCP/plugin e
-una sezione **Consigli** filtrabile. Le card portano le etichette del
-framework [4D AI Fluency](https://www.anthropic.com/ai-fluency) di Anthropic
+le fasi candidate a diventare **agenti**, inventario di
+skill/progetti/MCP/plugin e una sezione **Consigli** filtrabile. Le card
+portano le etichette del framework
+[4D AI Fluency](https://www.anthropic.com/ai-fluency) di Anthropic
 (Delega, Descrizione, Discernimento, Diligenza).
 
 ## Come funziona
@@ -105,10 +118,11 @@ principali:
 | `projects_dir` | cartella dei progetti/clienti | `Projects` |
 | `skills_dir` | cartella delle skill nel workspace (con symlink in `~/.claude/skills`); `""` = le skill vivono direttamente in `~/.claude/skills` | `SKILL` |
 | `index_file` | indice del workspace che linka skill e progetti; `""` = nessuno (niente alert di indicizzazione) | `CLAUDE.md` |
-| `hub_project` | la cartella che rappresenta te (non un cliente): esclusa da "clienti freddi" | *(vuoto)* |
+| `hub_project` | la cartella che rappresenta te (non un cliente): esclusa da "clienti da verificare" | *(vuoto)* |
 | `brand` | titolo e sottotitolo della pagina | — |
 | `currency` | valuta di vetrina per i costi (conversione dal USD col cambio BCE del giorno) | `EUR` |
-| `thresholds` | tutte le soglie (cliente freddo, vivaio, sanguisughe…) | vedi esempio |
+| `thresholds` | tutte le soglie (cliente da verificare, vivaio, sanguisughe…) | vedi esempio |
+| `cadenza_clienti` | cadenza attesa per singolo cliente, in giorni (mensili, stagionali, in pausa…): sostituisce `freddo_giorni` per quel cliente | `{}` |
 | `flow_names` | nome "di finalità" per i flussi delle tue skill (es. `articolo-blog-seo` → "Dal brief all'articolo del blog") | slug della skill |
 | `flow_tags` | 1–2 divisioni del lavoro per flusso (SEO, Content, Gestione clienti…) | "Da classificare" |
 | `flow_phases` | mappe-processo curate: le attività di ogni flusso, comprese quelle fuori sessione | estrazione automatica |

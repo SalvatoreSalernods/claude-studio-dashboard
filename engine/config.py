@@ -37,7 +37,8 @@ DEFAULTS = {
     "currency": "EUR",            # valuta di vetrina per i costi ("USD" = niente cambio)
     "deliverable_exts": [".md", ".xlsx", ".docx", ".pdf", ".csv", ".pptx", ".html"],
     "thresholds": {
-        "freddo_giorni": 14,        # cliente senza attività da più di N giorni = freddo
+        "freddo_giorni": 14,        # cliente fermo da più di N giorni = da verificare
+                                    # (default globale; override in cadenza_clienti)
         "grace_skill_giorni": 7,    # una skill appena nata non è "ferma"
         "banco_giorni": 60,         # skill nuove sotto osservazione ROI
         "soglia_vivaio": 3,         # consegne libere simili per proporre una skill
@@ -49,6 +50,8 @@ DEFAULTS = {
     },
 
     # --- personalizzazioni del racconto (tutte opzionali)
+    "cadenza_clienti": {},        # nome progetto -> giorni di cadenza attesa
+                                  # (clienti mensili, stagionali, in pausa...)
     "mcp_labels": {},             # chiave-diario MCP -> etichetta leggibile
     "utility_skills": [],         # skill-attrezzo extra (oltre alle built-in note)
     "flow_names": {},             # slug skill -> nome "di finalità" del flusso
@@ -94,6 +97,7 @@ class Config:
         self.deliv_exts = {e.lower() for e in merged["deliverable_exts"]}
         self.th = merged["thresholds"]
 
+        self.cadenza_clienti = merged["cadenza_clienti"]
         self.mcp_labels = merged["mcp_labels"]
         self.utility_skills = set(merged["utility_skills"])
         self.flow_names = merged["flow_names"]
