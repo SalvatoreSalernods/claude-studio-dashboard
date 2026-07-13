@@ -1,12 +1,19 @@
 # Claude Studio Dashboard
 
+![Anteprima della dashboard](docs/preview.png)
+
 **Claude Studio Dashboard ti mostra dove il tuo lavoro con Claude Code è già
-sistematico, dove resta manuale e cosa conviene automatizzare.** Uno scanner
-locale legge i metadati del tuo workspace — diari di sessione, cartelle dei
-clienti, connettori, telemetria — e produce una pagina web privata con i
-numeri che servono a decidere. Intorno a questo nucleo, i moduli di contorno:
-quanto ti costa ogni consegna, quali clienti sono fermi oltre il loro ritmo,
-cosa è rotto negli strumenti. Zero inserimento manuale di dati.
+sistematico, dove resta manuale e cosa conviene automatizzare.**
+
+Uno scanner locale legge i metadati del tuo workspace — diari di sessione,
+cartelle dei clienti, connettori, telemetria — e produce una pagina web privata
+con i numeri che servono a decidere. Intorno a questo nucleo, i moduli di
+contorno: quanto ti costa ogni consegna, quali clienti sono fermi oltre il loro
+ritmo, cosa è rotto negli strumenti. Zero inserimento manuale di dati.
+
+**Requisiti** · Claude Code + un workspace organizzato a cartelle · Python 3
+(già presente su macOS) · il modulo costi reali è per ora solo macOS · UI e
+documentazione in italiano.
 
 > **English** — A local, zero-dependency dashboard that shows where your
 > Claude Code work is already systematic, where it is still manual, and what
@@ -21,6 +28,8 @@ cosa è rotto negli strumenti. Zero inserimento manuale di dati.
 (dati di fantasia, generati da `engine/demo.py`) ·
 **[→ Guida alla lettura](https://salvatoresalernods.github.io/claude-studio-dashboard/guida.html)**
 (metriche, soglie, esempi, glossario)
+
+**Salta a:** [Cosa misura](#cosa-misura) · [Installazione](#installazione) · [Uso quotidiano](#uso-quotidiano) · [Privacy](#privacy) · [Limiti](#limiti-dichiarati)
 
 ## Cosa misura
 
