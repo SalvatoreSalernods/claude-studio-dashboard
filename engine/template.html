@@ -764,6 +764,22 @@ mbox('Livello di delega', b => {
   b.append(el('div', 'big', (M.delega ?? '—') + '%'));
   b.append(el('div', 'dim', 'sessioni guidate da un orchestratore'));
 });
+if (M.trasversali) mbox('Flussi trasversali — riuso tra progetti', b => {
+  const T = M.trasversali;
+  b.append(el('div', 'big', String(T.n)));
+  if (!T.n) {
+    b.append(el('div', 'dim', T.tot
+      ? `nessuno dei ${T.tot} flussi con consegne ha ancora lavorato per 2+ progetti: ogni ricetta serve un cliente solo.`
+      : 'nessun flusso codificato con consegne nella finestra.'));
+  } else {
+    b.append(el('div', 'dim',
+      `flussi che hanno consegnato per 2+ progetti diversi (su ${T.tot} con consegne): una ricetta riusata tra clienti è capitale dello studio, non una procedura una tantum.`));
+    const u = el('ul');
+    for (const f of T.flows)
+      u.append(el('li', null, `${f.label} — ${f.projects} progetti`));
+    b.append(u);
+  }
+});
 mbox('Coda investimenti', b => {
   b.append(el('div', 'big', `${M.coda.orchestratori + M.coda.agenti}`));
   b.append(el('div', 'dim',

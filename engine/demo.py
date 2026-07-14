@@ -71,9 +71,11 @@ def build_storico():
         t = i / n  # 0 → inizio serie, 1 → oggi
         metodo = round(68 + 8 * t + 1.4 * math.sin(i * 0.9))
         strumenti, copertura = 85, 83
+        conformita = round(80 + 5 * t + 1.5 * math.sin(i * 1.1))
         row = {
             "d": iso(back),
-            "salute": round(0.40 * metodo + 0.30 * strumenti + 0.30 * copertura),
+            "salute": round(0.30 * metodo + 0.25 * conformita
+                            + 0.25 * strumenti + 0.20 * copertura),
             "metodo": metodo,
             "strumenti": strumenti,
             "copertura": copertura,
@@ -84,12 +86,12 @@ def build_storico():
             "costo": round(3.4 - 0.45 * t + 0.22 * math.sin(i * 0.8), 2),
             "autonomia": round(62 + 7 * t + 2 * math.sin(i * 0.7)),
             "giri": round(1.35 - 0.15 * t + 0.08 * math.sin(i * 1.7), 1),
-            "conformita": round(80 + 5 * t + 1.5 * math.sin(i * 1.1)),
+            "conformita": conformita,
             "consegne30": round(32 + 8 * t + 1.2 * math.sin(i * 0.5)),
         }
         rows.append(row)
     # l'oggi delle tile, esatto
-    rows[-1].update({"metodo": 76, "salute": 81, "costo": 2.99, "autonomia": 69,
+    rows[-1].update({"metodo": 76, "salute": 82, "costo": 2.99, "autonomia": 69,
                      "giri": 1.2, "conformita": 85, "consegne30": 40,
                      "sessioni": 61, "peso": 188, "riparare": 1})
     return rows
@@ -112,7 +114,9 @@ def build():
     con_metodo, operative = 37, 49
     metodo = round(con_metodo / operative * 100)          # 76
     strumenti, copertura = 85, 83                          # 1 alert −15 · 5 clienti su 6
-    salute = round(0.40 * metodo + 0.30 * strumenti + 0.30 * copertura)  # 81
+    affidabilita = 85                                      # prima stesura buona (34/40)
+    salute = round(0.30 * metodo + 0.25 * affidabilita
+                   + 0.25 * strumenti + 0.20 * copertura)  # 82
 
     cost, requests = 41.85, 132
     tok = {"in": 214300, "out": 168400, "cache": 15600000}
@@ -137,8 +141,8 @@ def build():
     tiles = [
         {"id": "salute", "label": "Indice operativo", "value": salute,
          "unit": "/100", "band": band, "delta": delta("salute"),
-         "note": f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} "
-                 f"+ 0,30·Copertura {copertura}"},
+         "note": f"0,30·Metodo {metodo} + 0,25·Affidabilità {affidabilita} "
+                 f"+ 0,25·Strumenti {strumenti} + 0,20·Copertura {copertura}"},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo,
          "unit": "%", "delta": delta("metodo"),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
@@ -217,6 +221,12 @@ def build():
         "banco": [{"name": "newsletter-mensile", "giorni": 18, "usi": 4},
                   {"name": "preventivo-da-brief", "giorni": 33, "usi": 2}],
         "delega": 9,
+        "trasversali": {"n": 4, "tot": 5, "flows": [
+            {"label": "Report mensile per il cliente", "projects": 5},
+            {"label": "Dal brief all'articolo del blog", "projects": 4},
+            {"label": "Piano editoriale social del mese", "projects": 3},
+            {"label": "Newsletter del mese", "projects": 2},
+        ]},
         "coda": {"orchestratori": 1, "agenti": 1},
     }
 

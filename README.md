@@ -37,19 +37,25 @@ Le 5 tile in alto:
 
 | Tile | Domanda a cui risponde |
 |---|---|
-| **Indice operativo** (0–100) | come sto messo, a semaforo? verde ≥80 · giallo 60–79 · rosso <60. I pesi (`0,40·Metodo + 0,30·Strumenti + 0,30·Copertura clienti`) sono una scelta dichiarata, non una misura scientifica: la nota mostra sempre i tre ingredienti |
+| **Indice operativo** (0–100) | come sto messo, a semaforo? verde ≥80 · giallo 60–79 · rosso <60. Misura affidabilità e ripetibilità, non solo quanto usi Claude: `0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura clienti`, dove l'Affidabilità è la «prima stesura buona» (sotto). I pesi sono una scelta dichiarata, non una misura scientifica: la nota mostra sempre gli ingredienti. Senza consegne valutabili nella finestra vale la formula a tre (`0,40/0,30/0,30`) |
 | **Quota di metodo** | quanta parte del lavoro segue una ricetta scritta (skill) invece dell'improvvisazione? |
 | **Clienti da verificare** | quali clienti sono fermi oltre la loro cadenza attesa? (la lista delle telefonate da fare — la cadenza si può fissare cliente per cliente) |
 | **Costo per consegna** | quanto mi costa di Claude ogni file consegnato? (telemetria reale; senza, un proxy in KB) |
 | **Da riparare** | quanti problemi concreti toccano gli strumenti in questo momento? |
 
-Il cuore della dashboard sono i due moduli sul **metodo**:
+Il cuore della dashboard sono i moduli sul **metodo**:
 
 - il **Vivaio** — il lavoro che ripeti a mano nelle sessioni libere,
   individuato e proposto come candidato a diventare una skill: la parte
   difficile dell'automazione non è scriverla, è capire cosa merita di esserlo;
+- i **flussi trasversali** — quante ricette hanno consegnato per 2+ progetti
+  diversi: il riuso dei flussi tra clienti, cioè il metodo che è diventato
+  capitale dello studio invece di una procedura una tantum;
 - la card **Attrito ed esecuzione** — quanto il lavoro esce bene al primo
-  colpo: prima stesura buona, giri di revisione per consegna, autonomia dati
+  colpo: **prima stesura buona** (il *first-pass yield*: % di consegne
+  completate senza interventi successivi — né correzioni in chat, né riprese,
+  né ritocchi a mano), **giri di revisione** (il numero medio di iterazioni
+  dopo la prima consegna per arrivare al risultato), autonomia dati
   (MCP vs import manuali), consegne a settimana, sessioni "sanguisuga"
   (pesanti, tanti giri, zero consegne). È la misura più vicina alla qualità
   operativa che si possa ottenere leggendo solo metadati.

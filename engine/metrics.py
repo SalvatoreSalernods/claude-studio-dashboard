@@ -4,16 +4,22 @@ Metriche decisionali della dashboard.
 
 Qui vivono i numeri che fanno prendere decisioni:
 
-  Indice operativo (0–100) = 0,40·Metodo + 0,30·Strumenti + 0,30·Copertura
-  - Metodo    = % sessioni operative dentro flussi codificati (chat escluse)
-  - Strumenti = 100 − penalità SOLO su ciò che si usa (le auth scadute su servizi
-                mai usati NON pesano: sono "decisioni in sospeso", non salute)
-  - Copertura = % clienti con attività entro la loro cadenza attesa
-                (default thresholds.freddo_giorni, override in cadenza_clienti)
+  Indice operativo (0–100) =
+      0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura
+  - Metodo       = % sessioni operative dentro flussi codificati (chat escluse)
+  - Affidabilità = la "prima stesura buona" (first-pass yield): % di consegne
+                   uscite giuste al primo colpo, senza interventi successivi.
+                   Senza consegne valutabili nella finestra l'ingrediente manca
+                   e vale la formula a tre: 0,40·Metodo + 0,30·Strumenti +
+                   0,30·Copertura (la nota della tile lo dichiara)
+  - Strumenti    = 100 − penalità SOLO su ciò che si usa (le auth scadute su
+                   servizi mai usati NON pesano: sono "decisioni in sospeso")
+  - Copertura    = % clienti con attività entro la loro cadenza attesa
+                   (default thresholds.freddo_giorni, override in cadenza_clienti)
 
   L'indice è un semaforo (verde ≥80 · giallo 60–79 · rosso <60), non una
   misura di precisione: i pesi sono una scelta progettuale dichiarata, e la
-  nota della tile mostra sempre i tre ingredienti.
+  nota della tile mostra sempre gli ingredienti.
 
 Più: le misure della card Metodo (vivaio, automazioni ferme, banco di prova,
 livello di delega, coda investimenti), il proxy dei consumi (peso per consegna)
@@ -111,6 +117,7 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     dati_auto, dati_tot = 0, 0           # autonomia dati: MCP vs import manuale
     giri_tot, giri_sess = 0, 0           # giri di revisione nelle sessioni con consegna
     sanguisughe = []                     # pesanti, tanti giri, zero consegne
+    flussi_proj = {}                     # famiglia -> progetti con consegne (riuso)
     for s in chains:
         key = _fam_key(s.get("chain"))
         if key == "_chat":
@@ -120,6 +127,8 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         consegne += len(s.get("outs") or [])
         if key != "_libero":
             con_metodo += 1
+            for o in s.get("outs") or []:
+                flussi_proj.setdefault(key, set()).add(o[0])
         else:
             for o in s.get("outs") or []:
                 name = (o[2] or "").rsplit("/", 1)[-1]
@@ -215,8 +224,20 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     strumenti = max(0, 100 - sum(a.get("peso", 0) for a in riparare))
 
     salute, band = None, None
+    salute_note = "ingredienti non ancora misurabili (servono sessioni e clienti)"
     if metodo is not None and copertura is not None:
-        salute = round(0.40 * metodo + 0.30 * strumenti + 0.30 * copertura)
+        # l'Affidabilità (prima stesura buona) entra solo se c'è almeno una
+        # consegna valutabile; altrimenti vale la formula a tre ingredienti
+        if conformita is not None:
+            salute = round(0.30 * metodo + 0.25 * conformita
+                           + 0.25 * strumenti + 0.20 * copertura)
+            salute_note = (f"0,30·Metodo {metodo} + 0,25·Affidabilità {conformita} "
+                           f"+ 0,25·Strumenti {strumenti} + 0,20·Copertura {copertura}")
+        else:
+            salute = round(0.40 * metodo + 0.30 * strumenti + 0.30 * copertura)
+            salute_note = (f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} "
+                           f"+ 0,30·Copertura {copertura} · senza consegne "
+                           f"valutabili l'Affidabilità non entra")
         band = ({"cls": "good", "text": "verde: in salute"} if salute >= 80
                 else {"cls": "warn", "text": "giallo: da tenere d'occhio"}
                 if salute >= 60 else {"cls": "bad", "text": "rosso: serve un intervento"})
@@ -250,12 +271,21 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
             ferme.append(sk["name"])
     banco.sort(key=lambda b: b["giorni"])
 
+    # riuso tra progetti: i flussi codificati che hanno consegnato per 2+
+    # progetti diversi — il metodo che è diventato capitale, non one-shot
+    trasversali = sorted(
+        ({"label": flows.flow_name(k), "projects": len(v)}
+         for k, v in flussi_proj.items() if len(v) >= 2),
+        key=lambda x: -x["projects"])
+
     metodo_card = {
         "quota": metodo, "operative": operative, "con_metodo": con_metodo,
         "vivaio": vivaio[:5],
         "ferme": ferme,
         "banco": banco[:6],
         "delega": delega,
+        "trasversali": {"n": len(trasversali), "tot": len(flussi_proj),
+                        "flows": trasversali[:5]},
         "coda": {"orchestratori": len(orch_candidates),
                  "agenti": len(agent_candidates)},
     }
@@ -302,7 +332,7 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         {"id": "salute", "label": "Indice operativo", "value": salute,
          "unit": "/100", "band": band,
          "delta": _delta(salute, prev and prev.get("salute")),
-         "note": f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} + 0,30·Copertura {copertura}"},
+         "note": salute_note},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo, "unit": "%",
          "delta": _delta(metodo, prev and prev.get("metodo")),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
