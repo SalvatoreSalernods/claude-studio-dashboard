@@ -160,13 +160,16 @@ si deducono automaticamente dai diari.
 
 ## Privacy
 
-Lo scanner legge **solo metadati**: nomi di file e cartelle, conteggi, date,
-nomi di skill e server. Mai contenuti di file, mai testo delle conversazioni,
-mai valori di chiavi o variabili (delle env esporta solo i NOMI). Tutto gira
-in locale; l'unica chiamata di rete dello scanner è il cambio valuta del
-giorno (api.frankfurter.app, dati BCE), disattivabile con `currency: "USD"`.
-La pagina pubblicata come Artifact è privata, protetta dal login del tuo
-account claude.ai.
+Lo scanner produce **solo metadati**: nomi di file e cartelle, conteggi, date,
+nomi di skill e server. Non conserva né esporta mai contenuti di file, testo
+delle conversazioni o valori di chiavi e variabili (delle env escono solo i
+NOMI). Per contare i turni di una sessione guarda l'inizio dei messaggi in
+memoria — solo per distinguerli dagli eventi di sistema — ma quel testo non
+entra mai in `data.json` né nella pagina. Tutto gira in locale; l'unica
+chiamata di rete dello scanner è il cambio valuta del giorno
+(api.frankfurter.app, dati BCE), disattivabile con `currency: "USD"`. La pagina
+pubblicata come Artifact è privata, protetta dal login del tuo account
+claude.ai.
 
 ## Limiti dichiarati
 
