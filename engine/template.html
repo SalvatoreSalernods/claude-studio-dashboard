@@ -330,7 +330,8 @@
 
     <div class="card" id="skill">
       <h2>Skill <span class="sub" id="skills-sub"></span></h2>
-      <div class="scroll"><table id="skills-table"></table></div>
+      <div class="tagbar" id="skills-tabs"></div>
+      <div id="skills-tables"></div>
       <ul class="plainlist" id="skills-extra" style="margin-top:10px"></ul>
     </div>
 
@@ -1033,16 +1034,55 @@ const SYM = {
   'altrove': () => chip('serious', 'altrove'),
   'dir reale': () => chip('warning', 'dir reale'),
 };
-document.getElementById('skills-sub').textContent = `· ${DATA.inventory.skills} in SKILL/`;
-table('skills-table',
-  [['Skill'], ['Symlink'], ['Indice'], [`Uso ${DATA.window_days}gg`, 'num'], ['Aggiornata', 'num']],
-  DATA.skills.map(s => [
-    { text: s.name, cls: 'name' },
-    { node: (SYM[s.symlink] || (() => chip('warning', s.symlink)))() },
-    { node: s.indexed ? CHIP_YES() : CHIP_NO() },
-    { text: useMap[s.name] || '—', cls: 'num' },
-    { text: s.updated, cls: 'num dim' },
-  ]));
+const skillHeaders =
+  [['Skill'], ['Symlink'], ['Indice'], [`Uso ${DATA.window_days}gg`, 'num'], ['Aggiornata', 'num']];
+const skillRow = s => [
+  { text: s.name, cls: 'name' },
+  { node: (SYM[s.symlink] || (() => chip('warning', s.symlink)))() },
+  { node: s.indexed ? CHIP_YES() : CHIP_NO() },
+  { text: useMap[s.name] || '—', cls: 'num' },
+  { text: s.updated, cls: 'num dim' },
+];
+const areasCfg = DATA.skill_areas || {};
+const skillTabs = document.getElementById('skills-tabs');
+const skillTables = document.getElementById('skills-tables');
+
+if (Object.keys(areasCfg).length) {
+  // raggruppa in tab: l'ordine delle chiavi in config è l'ordine delle tab;
+  // le skill non elencate confluiscono in "Altro" alla fine.
+  const areaOf = {};
+  for (const [area, list] of Object.entries(areasCfg))
+    for (const name of list) areaOf[name] = area;
+  const byArea = {};
+  for (const s of DATA.skills) {
+    const a = areaOf[s.name] || 'Altro';
+    (byArea[a] = byArea[a] || []).push(s);
+  }
+  const order = [...Object.keys(areasCfg), 'Altro'].filter(a => byArea[a] && byArea[a].length);
+  document.getElementById('skills-sub').textContent =
+    `· ${DATA.inventory.skills} in SKILL/ · raggruppate per area`;
+  order.forEach((a, i) => {
+    const wrap = el('div', 'scroll'); wrap.id = `skills-area-${i}`;
+    if (i) wrap.style.display = 'none';
+    const tbl = el('table'); tbl.id = `skills-table-${i}`;
+    wrap.append(tbl); skillTables.append(wrap);
+    table(`skills-table-${i}`, skillHeaders, byArea[a].map(skillRow));
+    const btn = el('button', i ? '' : 'on', `${a} (${byArea[a].length})`);
+    btn.onclick = () => {
+      order.forEach((_, j) =>
+        document.getElementById(`skills-area-${j}`).style.display = j === i ? '' : 'none');
+      [...skillTabs.children].forEach((x, j) => x.classList.toggle('on', j === i));
+    };
+    skillTabs.append(btn);
+  });
+} else {
+  // nessuna area configurata: tabella unica (comportamento storico)
+  document.getElementById('skills-sub').textContent = `· ${DATA.inventory.skills} in SKILL/`;
+  const wrap = el('div', 'scroll');
+  const tbl = el('table'); tbl.id = 'skills-table';
+  wrap.append(tbl); skillTables.append(wrap);
+  table('skills-table', skillHeaders, DATA.skills.map(skillRow));
+}
 const extra = document.getElementById('skills-extra');
 const he = DATA.home_extra;
 if (he.official.length) extra.append(el('li', null, `Ufficiali installate (sola lettura): ${he.official.join(', ')}`));

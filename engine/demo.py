@@ -439,6 +439,13 @@ def build():
         "advice": advice,
         "alerts": alerts,
         "skills": skills,
+        "skill_areas": {
+            "SEO & Contenuti":   ["articolo-blog-seo", "newsletter-mensile"],
+            "Social":            ["piano-editoriale-social"],
+            "Ricerca & Analisi": ["audit-sito-web", "analisi-competitor",
+                                  "rassegna-stampa-settore"],
+            "Gestione cliente":  ["report-mensile-cliente", "preventivo-da-brief"],
+        },
         "home_extra": {"official": ["docx", "pdf", "pptx", "xlsx"],
                        "repo_links": [], "anomalies": []},
         "projects": projects,

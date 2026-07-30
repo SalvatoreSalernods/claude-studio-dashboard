@@ -47,6 +47,12 @@
     "report-mensile-cliente": ["Gestione clienti"]
   },
 
+  "skill_areas": {
+    "SEO & Contenuti": ["articolo-blog-seo", "audit-sito-web"],
+    "Social": ["piano-editoriale-social", "newsletter-mensile"],
+    "Gestione cliente": ["report-mensile-cliente", "preventivo-da-brief"]
+  },
+
   "flow_phases": {
     "articolo-blog-seo": [
       {"label": "Brief del cliente e scelta della keyword", "kind": "tu"},

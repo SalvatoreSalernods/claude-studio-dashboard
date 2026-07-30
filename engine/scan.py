@@ -826,6 +826,7 @@ def main():
         "advice": advice,
         "alerts": alerts,
         "skills": [{k: v for k, v in s.items() if k != "dir"} for s in skills],
+        "skill_areas": config.C.skill_areas,
         "home_extra": {
             "official": official,
             "repo_links": repo_links,

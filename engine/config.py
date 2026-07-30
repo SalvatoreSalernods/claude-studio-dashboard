@@ -57,6 +57,10 @@ DEFAULTS = {
     "flow_names": {},             # slug skill -> nome "di finalità" del flusso
     "flow_tags": {},              # slug skill -> [divisioni del lavoro] (1-2)
     "flow_phases": {},            # mappe-processo curate (formato in README)
+    "skill_areas": {},            # area di applicazione -> [slug skill]: raggruppa
+                                  # la tabella Skill in tab (l'ordine delle chiavi è
+                                  # l'ordine delle tab; le skill non elencate finiscono
+                                  # in "Altro"). Vuoto = tabella unica, senza tab.
 
     # --- controlli periodici (log watcher generico, formato in README)
     "checks": [],
@@ -103,6 +107,7 @@ class Config:
         self.flow_names = merged["flow_names"]
         self.flow_tags = merged["flow_tags"]
         self.flow_phases = merged["flow_phases"]
+        self.skill_areas = merged["skill_areas"]
         self.checks = merged["checks"]
 
         tel = merged["telemetry"]

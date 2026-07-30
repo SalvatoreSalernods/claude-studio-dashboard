@@ -141,6 +141,7 @@ principali:
 | `flow_names` | nome "di finalità" per i flussi delle tue skill (es. `articolo-blog-seo` → "Dal brief all'articolo del blog") | slug della skill |
 | `flow_tags` | 1–2 divisioni del lavoro per flusso (SEO, Content, Gestione clienti…) | "Da classificare" |
 | `flow_phases` | mappe-processo curate: le attività di ogni flusso, comprese quelle fuori sessione | estrazione automatica |
+| `skill_areas` | raggruppa la tabella Skill in tab per area di applicazione (es. SEO, Social): `{ "Area": ["slug-skill", …] }`. L'ordine delle chiavi è l'ordine delle tab; le skill non elencate finiscono in "Altro" | `{}` (tabella unica) |
 | `checks` | controlli periodici (log watcher: formato sotto) | nessuno |
 | `telemetry` | sonda dei costi reali (vedi [telemetry/README.md](telemetry/README.md)) | attiva se presente |
 
