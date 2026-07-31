@@ -476,7 +476,7 @@ for (const s of TREND.series) {
 let range = Infinity;
 const seg = document.getElementById('trend-seg');
 const firstT = TREND.points.length ? parseD(TREND.points[0].d).getTime() : Date.now();
-for (const [label, days] of [['14g', 14], ['1m', 30], ['3m', 91], ['6m', 182], ['12m', 365], ['Tutto', Infinity]]) {
+for (const [label, days] of [['7gg', 7], ['14gg', 14], ['30gg', 30], ['60gg', 60], ['90gg', 90], ['Tutto', Infinity]]) {
   const b = el('button', days === range ? 'on' : '', label);
   if (days !== Infinity && Date.now() - days * 86400000 <= firstT) {
     b.disabled = true;
