@@ -1,48 +1,50 @@
 #!/usr/bin/env python3
 """
-Metriche decisionali della dashboard.
+Metriche decisionali della Dashboard Workspace.
 
-Qui vivono i numeri che fanno prendere decisioni:
+Qui vivono i numeri che fanno prendere decisioni (formula del 5/7/2026,
+rivista il 14/7/2026 col feedback della community: l'indice misura
+affidabilità e ripetibilità, non solo quanto si usa Claude):
 
-  Indice operativo (0–100) =
+  Salute dello studio (0–100) =
       0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura
   - Metodo       = % sessioni operative dentro flussi codificati (chat escluse)
   - Affidabilità = la "prima stesura buona" (first-pass yield): % di consegne
                    uscite giuste al primo colpo, senza interventi successivi.
-                   Senza consegne valutabili nella finestra l'ingrediente manca
-                   e vale la formula a tre: 0,40·Metodo + 0,30·Strumenti +
-                   0,30·Copertura (la nota della tile lo dichiara)
+                   Senza consegne valutabili nella finestra vale la formula a
+                   tre: 0,40·Metodo + 0,30·Strumenti + 0,30·Copertura (la nota
+                   della tile lo dichiara)
   - Strumenti    = 100 − penalità SOLO su ciò che si usa (le auth scadute su
                    servizi mai usati NON pesano: sono "decisioni in sospeso")
-  - Copertura    = % clienti con attività entro la loro cadenza attesa
-                   (default thresholds.freddo_giorni, override in cadenza_clienti)
-
-  L'indice è un semaforo (verde ≥80 · giallo 60–79 · rosso <60), non una
-  misura di precisione: i pesi sono una scelta progettuale dichiarata, e la
-  nota della tile mostra sempre gli ingredienti.
+  - Copertura    = % clienti attivi con attività negli ultimi 14 giorni
 
 Più: le misure della card Metodo (vivaio, automazioni ferme, banco di prova,
 livello di delega, coda investimenti), il proxy dei consumi (peso per consegna)
-e lo storico su file (storico.json nell'output_dir) con backfill settimanale
-della Quota di metodo ricavato dai diari ancora conservati.
-
-Le soglie e il nome del progetto-hub arrivano da config.C.
+e lo storico su file (storico.json) con backfill settimanale della Quota di
+metodo ricavato dai diari ancora conservati.
 """
 
 import json
 from datetime import datetime, timedelta
+from pathlib import Path
 
-import config
 import flows
 
-CUR_SYMBOL = {"EUR": "€", "GBP": "£", "JPY": "¥", "CHF": "CHF"}
+HERE = Path(__file__).resolve().parent
+STORICO = HERE / "storico.json"
+
+HUB_PROJECT = "Digital Strategist"   # hub professionale, non un cliente
+FREDDO_GIORNI = 14
+GRACE_SKILL_GIORNI = 7               # una skill nuova non è "ferma" nei primi giorni
+BANCO_GIORNI = 60                    # skill/orchestratori sotto osservazione ROI
+SOGLIA_VIVAIO = 3                    # consegne libere simili per proporre una skill
 
 
 # --------------------------------------------------------------------- storico
 
 def load_storico():
     try:
-        return json.loads(config.C.storico_file.read_text(encoding="utf-8"))
+        return json.loads(STORICO.read_text(encoding="utf-8"))
     except Exception:
         return {"days": []}
 
@@ -53,8 +55,7 @@ def append_storico(entry):
     st["days"].append(entry)
     st["days"].sort(key=lambda x: x["d"])
     st["days"] = st["days"][-400:]
-    config.C.storico_file.write_text(
-        json.dumps(st, ensure_ascii=False, indent=1), encoding="utf-8")
+    STORICO.write_text(json.dumps(st, ensure_ascii=False, indent=1), encoding="utf-8")
     return st
 
 
@@ -70,7 +71,7 @@ def _pct(num, den):
 
 def _delta(cur, prev, invert=False):
     """Pillola di variazione: dir 'good'/'bad'/'flat' + testo. invert=True se
-    scendere è un bene (es. peso per consegna, clienti da verificare)."""
+    scendere è un bene (es. peso per consegna, clienti freddi)."""
     if prev is None or cur is None:
         return None
     diff = round(cur - prev, 1)
@@ -82,6 +83,8 @@ def _delta(cur, prev, invert=False):
             "dir": "good" if good else "bad"}
 
 
+# --------------------------------------------------------------------- compute
+
 def _tok(n):
     """Numero di token in forma compatta (1.2M, 46k)."""
     if n >= 1_000_000:
@@ -91,20 +94,59 @@ def _tok(n):
     return str(n)
 
 
-# --------------------------------------------------------------------- compute
+def compute_by_division_extended(chains, projects, alerts, consegne_files=None):
+    """Metriche operative calcolate interamente nel perimetro divisione."""
+    consegne_files = consegne_files or []
+    alerts = alerts or []
+    divisions = {d for s in chains for d in flows._session_tags(s)}
+    divisions.update(d for p in projects for d in p.get("divisions", []))
+    result = {}
+
+    for div in sorted(divisions):
+        sessions = [s for s in chains
+                    if _fam_key(s.get("chain")) != "_chat"
+                    and div in flows._session_tags(s)]
+        metodo = _pct(sum(_fam_key(s.get("chain")) != "_libero" for s in sessions),
+                      len(sessions))
+        clients = {o[0] for s in sessions for o in (s.get("outs") or [])}
+        files = [f for f in consegne_files if div in (f.get("divisions") or [])]
+        buone = sum(not f.get("chat") and not f.get("rilavorata")
+                    and not f.get("manuale") for f in files)
+        conformita = _pct(buone, len(files))
+        penalty = sum(a.get("peso", 0) for a in alerts
+                      if div in (a.get("divisions") or []))
+        strumenti = max(0, 100 - penalty)
+        served = [p for p in projects if div in p.get("divisions", [])]
+        active = [p for p in served if p.get("days_since") is not None
+                  and p["days_since"] <= FREDDO_GIORNI]
+        copertura = _pct(len(active), len(served))
+        indice = None
+        if None not in (metodo, conformita, copertura):
+            indice = round(0.30 * metodo + 0.25 * conformita
+                           + 0.25 * strumenti + 0.20 * copertura)
+        result[div] = {
+            "quota_metodo": metodo,
+            "clienti_impattati": len(clients),
+            "strumenti": strumenti,
+            "indice_operativo": indice,
+            "conformita": conformita,
+            "copertura": copertura,
+            "sessioni": len(sessions),
+        }
+    return result
+
 
 def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
             agent_candidates, orch_candidates, consegne_files=None, telemetry=None,
-            rate=None, rate_date=""):
+            eur_rate=None, eur_date=""):
     """Calcola metriche, aggiorna lo storico e prepara le serie per il grafico.
 
     chains: sessioni della finestra, ognuna con chain/skills/mcp/web/outs/size/
     mtime più i campi di attrito (user_msgs, rev_rounds, data_imports, t0/t1).
     consegne_files: registro file consegnati (da scan.scan_consegne).
     telemetry: costi e token reali dalla sonda locale (da scan.scan_telemetry).
-    rate/rate_date: cambio USD→valuta di vetrina (BCE); la fonte dà solo dollari.
+    eur_rate/eur_date: cambio USD→EUR del giorno (BCE); la fonte dà solo dollari.
     """
-    th = config.C.th
     now = datetime.now()
     oggi = now.strftime("%Y-%m-%d")
     consegne_files = consegne_files or []
@@ -149,10 +191,9 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         if s.get("outs"):
             giri_sess += 1
             giri_tot += s.get("rev_rounds", 0)
-        elif (s.get("size", 0) > th["sanguisuga_kb"] * 1000
-              and s.get("rev_rounds", 0) >= th["sanguisuga_giri"]):
+        elif s.get("size", 0) > 250_000 and s.get("rev_rounds", 0) >= 3:
             sanguisughe.append({
-                "label": flows.flow_name(key),
+                "label": flows.FLOW_NAMES.get(key, key),
                 "date": datetime.fromtimestamp(s["mtime"]).strftime("%d/%m"),
                 "giri": s.get("rev_rounds", 0), "size": s.get("size", 0)})
     sanguisughe.sort(key=lambda x: -x["size"])
@@ -166,9 +207,9 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     # --- attrito sulle consegne (registro file)
     autonomia = _pct(dati_auto, dati_tot)
     giri = round(giri_tot / giri_sess, 1) if giri_sess else None
-    # prima stesura buona = il file non è più stato riscritto dopo un messaggio
-    # dell'utente (in chat), né ripreso in un'altra sessione entro la soglia,
-    # né corretto a mano. Le modifiche su copie cloud restano invisibili.
+    # prima stesura buona = il file non è più stato riscritto dopo un tuo
+    # messaggio (in chat), né ripreso in un'altra sessione entro 7gg, né
+    # corretto a mano. Le modifiche sulla copia Google Drive restano invisibili.
     chat_corrette = sum(1 for f in consegne_files if f.get("chat"))
     riprese = sum(1 for f in consegne_files if f.get("rilavorata"))
     corrette_mano = sum(1 for f in consegne_files if f.get("manuale"))
@@ -210,20 +251,16 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         "sanguisughe": sanguisughe[:3],
     }
 
-    # --- copertura clienti (il progetto-hub non è un cliente): ogni cliente
-    #     ha la sua cadenza attesa (cadenza_clienti), default freddo_giorni
-    freddo_gg = th["freddo_giorni"]
-    cadenze = config.C.cadenza_clienti
-    clienti = [p for p in projects if p["name"] != config.C.hub]
+    # --- copertura clienti (il hub non è un cliente)
+    clienti = [p for p in projects if p["name"] != HUB_PROJECT]
     freddi = [p["name"] for p in clienti
-              if p.get("days_since") is None
-              or p["days_since"] > cadenze.get(p["name"], freddo_gg)]
+              if p.get("days_since") is None or p["days_since"] > FREDDO_GIORNI]
     copertura = _pct(len(clienti) - len(freddi), len(clienti))
 
     # --- strumenti: 100 − penalità degli alert "da riparare"
     strumenti = max(0, 100 - sum(a.get("peso", 0) for a in riparare))
 
-    salute, band = None, None
+    salute = None
     salute_note = "ingredienti non ancora misurabili (servono sessioni e clienti)"
     if metodo is not None and copertura is not None:
         # l'Affidabilità (prima stesura buona) entra solo se c'è almeno una
@@ -238,9 +275,6 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
             salute_note = (f"0,40·Metodo {metodo} + 0,30·Strumenti {strumenti} "
                            f"+ 0,30·Copertura {copertura} · senza consegne "
                            f"valutabili l'Affidabilità non entra")
-        band = ({"cls": "good", "text": "verde: in salute"} if salute >= 80
-                else {"cls": "warn", "text": "giallo: da tenere d'occhio"}
-                if salute >= 60 else {"cls": "bad", "text": "rosso: serve un intervento"})
 
     # --- card Metodo
     def _esempi(k, n=3):
@@ -258,23 +292,23 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     vivaio = [{"label": f"{proj} · consegne {ext}", "count": c,
                "files": _esempi((proj, ext))}
               for (proj, ext), c in sorted(libero_outs.items(), key=lambda kv: -kv[1])
-              if c >= th["soglia_vivaio"]]
+              if c >= SOGLIA_VIVAIO]
 
     ferme, banco = [], []
     for sk in skills:
         usi = use_skill_map.get(sk["name"], 0)
         created = sk.get("created_ts")
         eta = (now.timestamp() - created) / 86400 if created else None
-        if eta is not None and eta <= th["banco_giorni"]:
+        if eta is not None and eta <= BANCO_GIORNI:
             banco.append({"name": sk["name"], "giorni": max(0, round(eta)), "usi": usi})
-        if usi == 0 and (eta is None or eta > th["grace_skill_giorni"]):
+        if usi == 0 and (eta is None or eta > GRACE_SKILL_GIORNI):
             ferme.append(sk["name"])
     banco.sort(key=lambda b: b["giorni"])
 
     # riuso tra progetti: i flussi codificati che hanno consegnato per 2+
     # progetti diversi — il metodo che è diventato capitale, non one-shot
     trasversali = sorted(
-        ({"label": flows.flow_name(k), "projects": len(v)}
+        ({"label": flows.FLOW_NAMES.get(k, k), "projects": len(v)}
          for k, v in flussi_proj.items() if len(v) >= 2),
         key=lambda x: -x["projects"])
 
@@ -293,25 +327,23 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     # --- storico: delta vs ultimo scan, poi aggiungo oggi
     st = load_storico()
     prev = st["days"][-1] if st["days"] else None
-    cur = config.C.currency
-    symbol = CUR_SYMBOL.get(cur, cur)
     if costo is not None:
         # la sonda telemetria dà i costi veri: la tile proxy lascia il posto.
-        # Lo storico salva sempre i DOLLARI (unità della fonte); la valuta di
-        # vetrina usa il cambio BCE del giorno, applicato anche al valore passato.
+        # Lo storico salva sempre i DOLLARI (unità della fonte); l'euro è la
+        # vetrina, col cambio BCE del giorno applicato anche al valore passato.
         t = telemetry["tok"]
         tok_note = f"{_tok(t['in'])} in · {_tok(t['out'])} out · {_tok(t['cache'])} cache"
         conseg = f"{n_tel} {'consegna' if n_tel == 1 else 'consegne'}"
         prev_c = prev and prev.get("costo")
-        if cur != "USD" and rate:
+        if eur_rate:
             costo_tile = {
                 "id": "peso", "label": "Costo per consegna",
-                "value": round(costo * rate, 2), "unit": f" {symbol}",
-                "delta": _delta(round(costo * rate, 2),
-                                prev_c and round(prev_c * rate, 2), invert=True),
+                "value": round(costo * eur_rate, 2), "unit": " €",
+                "delta": _delta(round(costo * eur_rate, 2),
+                                prev_c and round(prev_c * eur_rate, 2), invert=True),
                 "note": f"{telemetry['cost']:.2f} $ ≈ "
-                        f"{telemetry['cost'] * rate:.2f} {symbol} (cambio BCE "
-                        f"{rate_date}) per {conseg} dal {telemetry['first']} · "
+                        f"{telemetry['cost'] * eur_rate:.2f} € (cambio BCE "
+                        f"{eur_date}) per {conseg} dal {telemetry['first']} · "
                         f"token: {tok_note}"}
         else:
             costo_tile = {
@@ -329,22 +361,19 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
                                            invert=True),
             "note": nota}
     tiles = [
-        {"id": "salute", "label": "Indice operativo", "value": salute,
-         "unit": "/100", "band": band,
-         "delta": _delta(salute, prev and prev.get("salute")),
+        {"id": "salute", "label": "Salute dello studio", "value": salute,
+         "unit": "/100", "delta": _delta(salute, prev and prev.get("salute")),
          "note": salute_note},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo, "unit": "%",
          "delta": _delta(metodo, prev and prev.get("metodo")),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
-        {"id": "freddi", "label": "Clienti da verificare", "value": len(freddi), "unit": "",
+        {"id": "freddi", "label": "Clienti freddi", "value": len(freddi), "unit": "",
          "delta": _delta(len(freddi), prev and prev.get("freddi"), invert=True),
-         "note": ", ".join(freddi) if freddi
-                 else ("tutti entro la loro cadenza attesa" if cadenze
-                       else f"tutti attivi ≤{freddo_gg}gg")},
+         "note": ", ".join(freddi) if freddi else f"tutti attivi ≤{FREDDO_GIORNI}gg"},
         costo_tile,
         {"id": "riparare", "label": "Da riparare", "value": len(riparare), "unit": "",
          "delta": _delta(len(riparare), prev and prev.get("riparare"), invert=True),
-         "note": "alert che pesano sull'indice"},
+         "note": "alert che toccano la salute"},
     ]
 
     entry = {"d": oggi, "salute": salute, "metodo": metodo, "strumenti": strumenti,
@@ -378,11 +407,16 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         points.append({"d": d["d"], "salute": d.get("salute"),
                        "metodo": d.get("metodo"), "copertura": d.get("copertura")})
 
+    # --- stratificazione metriche per divisione di lavoro
+    by_division = compute_by_division_extended(chains, projects, riparare,
+                                               consegne_files)
+
     return {"tiles": tiles, "metodo_card": metodo_card, "attrito": attrito,
             "trend": {"points": points,
                       "series": [
-                          {"key": "salute", "label": "Indice", "color": "acc"},
+                          {"key": "salute", "label": "Salute", "color": "acc"},
                           {"key": "metodo", "label": "Metodo %", "color": "blu"},
                           {"key": "copertura", "label": "Copertura clienti %", "color": "aqua"},
                       ]},
-            "salute": salute, "strumenti": strumenti, "copertura": copertura}
+            "salute": salute, "strumenti": strumenti, "copertura": copertura,
+            "by_division": by_division}
