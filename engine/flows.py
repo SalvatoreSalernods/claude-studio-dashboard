@@ -89,7 +89,7 @@ FLOW_NAMES = {
     "youtube-tag-optimizer": "Tag YouTube per i correlati",
     "youtube-transcript-downloader": "Scarico trascrizioni YouTube",
     "dashboard-workspace": "Aggiornamento della dashboard workspace",
-    "skill-creator:skill-creator": "Officina: costruzione di nuove skill",
+    "skill-creator:skill-creator": "Garage: costruzione di nuove skill",
     "dataviz": "Grafica dati e visualizzazioni",
     "update-config": "Configurazione di Claude Code",
     "xlsx": "Lavorazione fogli Excel",
@@ -115,9 +115,9 @@ FLOW_TAGS = {
     "piano-operativo-da-call": ["Gestione clienti", "Social"],
     "estrai-spunti-personal-brand": ["Personal Brand"],
     "approfondisci-spunti-personal-brand": ["Personal Brand"],
-    "dashboard-workspace": ["Officina del metodo"],
-    "skill-creator:skill-creator": ["Officina del metodo"],
-    "update-config": ["Officina del metodo"],
+    "dashboard-workspace": ["Claude Code Garage"],
+    "skill-creator:skill-creator": ["Claude Code Garage"],
+    "update-config": ["Claude Code Garage"],
     "marketing:seo-audit": ["SEO & AEO"],
 }
 

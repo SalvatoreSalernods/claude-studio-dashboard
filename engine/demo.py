@@ -324,8 +324,8 @@ def build():
              ],
              "deliver": "file .md per Palestra & Wellness, E-commerce Moda",
              "mcp_extra": []},
-            {"name": "Officina: costruzione di nuove skill", "slug": "skill-creator",
-             "sessions": 2, "tags": ["Officina del metodo"],
+            {"name": "Garage: costruzione di nuove skill", "slug": "skill-creator",
+             "sessions": 2, "tags": ["Claude Code Garage"],
              "steps": [
                  {"label": "Individuazione di un lavoro ripetuto da codificare",
                   "kind": "tu", "tool": "", "share": None, "count": None,
@@ -347,7 +347,7 @@ def build():
             {"name": "SEO & AEO", "sessions": 8},
             {"name": "Gestione clienti", "sessions": 6},
             {"name": "Social", "sessions": 5},
-            {"name": "Officina del metodo", "sessions": 2},
+            {"name": "Claude Code Garage", "sessions": 2},
         ],
         "agent_candidates": [
             {"family": "Dal brief all'articolo del blog",
