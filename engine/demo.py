@@ -462,6 +462,29 @@ def build():
                     "outcome": "ok — nessun cambiamento",
                     "next": "prima sessione del mese prossimo"}],
         "flows": flows,
+        "by_division": {
+            # coerenti col resto della demo: la divisione più industrializzata
+            # è quella con la ricetta più usata, il "Lavoro libero" non compare
+            # perché non è una divisione ma la sua assenza
+            "Content": {"quota_metodo": 83, "clienti_impattati": 4, "strumenti": 100,
+                        "indice_operativo": 88, "conformita": 88, "copertura": 100,
+                        "sessioni": 12},
+            "SEO & AEO": {"quota_metodo": 88, "clienti_impattati": 4, "strumenti": 85,
+                          "indice_operativo": 87, "conformita": 86, "copertura": 100,
+                          "sessioni": 8},
+            "Gestione clienti": {"quota_metodo": 100, "clienti_impattati": 5,
+                                 "strumenti": 100, "indice_operativo": 89,
+                                 "conformita": 80, "copertura": 80, "sessioni": 6},
+            "Social": {"quota_metodo": 100, "clienti_impattati": 3, "strumenti": 100,
+                       "indice_operativo": 92, "conformita": 90, "copertura": 100,
+                       "sessioni": 5},
+            "Claude Code Garage": {"quota_metodo": 100, "clienti_impattati": 1,
+                                   "strumenti": 100, "indice_operativo": 90,
+                                   "conformita": 75, "copertura": 100, "sessioni": 2},
+            "Da classificare": {"quota_metodo": 0, "clienti_impattati": 2,
+                                "strumenti": 100, "indice_operativo": 45,
+                                "conformita": 50, "copertura": 100, "sessioni": 4},
+        },
         "orchestrators": orchestrators,
         "usage": {
             "skills": [{"name": "articolo-blog-seo", "n": 8},
