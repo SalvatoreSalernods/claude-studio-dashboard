@@ -313,12 +313,6 @@
       <div class="dim" id="division-note" style="margin-top:6px"></div>
     </div>
 
-    <div class="card" id="ia-impact">
-      <h2>Impatto dell'IA nei flussi <span class="sub">· autonomia, giri, qualità per scoprire dove migliorare (S-012)</span></h2>
-      <div class="bars" id="ia-impact-bars"></div>
-      <div class="dim" id="ia-impact-note" style="margin-top:6px"></div>
-    </div>
-
     <div class="card" id="consigli">
       <h2>Consigli <span class="sub">· cosa fare per usare meglio Claude Code nel tuo lavoro — filtra per tag</span></h2>
       <div class="tagbar" id="advice-tags"></div>
@@ -1177,21 +1171,6 @@ if (divRows.length) {
   document.getElementById('division-note').textContent = `Indice = 30% Metodo + 25% Conformità + 25% Strumenti + 20% Copertura Claude Code (clienti della divisione passati da Claude Code negli ultimi 14 giorni), calcolati nella singola divisione.`;
 } else {
   document.getElementById('by-division').style.display = 'none';
-}
-
-// ---- S-012: Impatto dell'IA nei flussi
-const iaItems = Object.entries(byDiv)
-  .filter(([_, m]) => m.sessioni > 0)
-  .map(([div, metrics]) => ({
-    name: div,
-    n: metrics.indice_operativo || 0
-  }))
-  .sort((a, b) => b.n - a.n);
-if (iaItems.length) {
-  bars('ia-impact-bars', iaItems);
-  document.getElementById('ia-impact-note').textContent = `Indice composito: autonomia dati + efficienza (inverso dei giri). Divisioni con punteggio alto mostrano dove Claude ha ridotto il lavoro manuale e i cicli di revisione.`;
-} else {
-  document.getElementById('ia-impact').style.display = 'none';
 }
 
 // ---- MCP e plugin
