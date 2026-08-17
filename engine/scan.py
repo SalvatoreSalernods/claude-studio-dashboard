@@ -2,16 +2,19 @@
 """
 Dashboard Workspace — scanner locale.
 
-Fotografa il workspace di Salvatore (skill, progetti, MCP, plugin, uso recente)
-e produce due file accanto a questo script:
+Fotografa il workspace descritto nel config.json (skill, progetti, MCP, plugin,
+uso recente) e produce due file nella cartella di output indicata lì:
 
   data.json       — snapshot in JSON: solo nomi, conteggi e date. Nessun segreto,
                     nessun contenuto di file, nessun testo delle call.
   dashboard.html  — pagina pronta da pubblicare come Artifact (template.html + dati).
 
+Nel codice non vive nessun percorso e nessun nome: tutto ciò che dipende da
+com'è fatto il workspace sta nel config (vedi config.example.json).
+
 Uso:
-  python3 scan.py           # scansiona e scrive i due file
-  python3 scan.py --dump    # come sopra, ma stampa anche un riepilogo leggibile
+  python3 scan.py --config <percorso>/config.json    # scansiona e scrive i due file
+  python3 scan.py --config <percorso>/config.json --dump   # + riepilogo a terminale
   python3 scan.py --demo    # NON scansiona: renderizza dashboard-demo.html con
                             # dati di fantasia (demo.py) per gli screenshot social.
                             # Non tocca data.json, storico, cache né l'Artifact.
@@ -29,89 +32,70 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote
 
+import config   # il config.json dell'utente: percorsi, soglie, mappe curate
 import flows    # modulo accanto a questo script: estrazione flussi dai diari
 import metrics  # metriche decisionali, storico e serie per il grafico
 
-WS = Path("/Users/salvatore/Documents/Claude")
-SKILL_DIR = WS / "SKILL"
-PROJECTS_DIR = WS / "Projects"
-CLAUDE_MD = WS / "CLAUDE.md"
-HOME_SKILLS = Path.home() / ".claude" / "skills"
-TRANSCRIPTS_ROOT = Path.home() / ".claude" / "projects"
-TRANSCRIPT_PREFIX = "-Users-salvatore-Documents-Claude"
-PLUGINS_JSON = Path.home() / ".claude" / "plugins" / "installed_plugins.json"
-
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.html"
-OUT_JSON = HERE / "data.json"
-OUT_HTML = HERE / "dashboard.html"
-CACHE = HERE / ".cache.json"
+HOME_SKILLS = Path.home() / ".claude" / "skills"
+PLUGINS_JSON = Path.home() / ".claude" / "plugins" / "installed_plugins.json"
+
+# Tutto ciò che dipende da COM'È FATTO il workspace arriva dal config: qui sotto
+# ci sono solo i valori di partenza, che _setup() sostituisce all'avvio. Nel
+# codice non vive il percorso, la cartella o la skill di nessuno.
+CFG = None
+WS = SKILL_DIR = PROJECTS_DIR = CLAUDE_MD = None
+TRANSCRIPTS_ROOT = TRANSCRIPT_PREFIX = None
+OUT_JSON = OUT_HTML = CACHE = EUR_CACHE = None
+HUB_PROJECT = ""
+WINDOW_DAYS = 30
+CURRENCY = "EUR"
+SKILL_AREAS = {}
+CHECKS = []
+OTEL_LOGS = []
+TELEMETRY_ON = True
+RESTART_HINT = ""
+MARGINE_SCRITTURA = 3600   # 1h: oltre, una modifica al file è considerata tua
+RILAV_GIORNI = 7           # riscrittura in altra sessione entro N giorni
 
 
-def _load_config():
-    """Legge il config.json: `--config <percorso>` se passato, altrimenti quello
-    accanto allo scanner. Il file è locale e non entra nel repo: qui vivono i nomi
-    del workspace di chi usa la dashboard, mai nel codice."""
-    path = HERE / "config.json"
+def _config_path():
+    """`--config <percorso>` — è così che lo invoca la skill dashboard-update —
+    altrimenti il config.json accanto allo scanner."""
     if "--config" in sys.argv:
         i = sys.argv.index("--config")
         if i + 1 >= len(sys.argv):
             raise SystemExit("--config richiede un percorso")
-        path = Path(sys.argv[i + 1]).expanduser().resolve()
-        if not path.exists():
-            raise SystemExit(f"config non trovato: {path}")
-    if not path.exists():
-        return {}
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as e:
-        raise SystemExit(f"config illeggibile ({path}): {e}")
+        return Path(sys.argv[i + 1]).expanduser()
+    return HERE / "config.json"
 
 
-CONFIG = _load_config()
+def _setup():
+    """Carica il config e lo distribuisce ai tre moduli del motore."""
+    global CFG, WS, SKILL_DIR, PROJECTS_DIR, CLAUDE_MD, TRANSCRIPTS_ROOT
+    global TRANSCRIPT_PREFIX, OUT_JSON, OUT_HTML, CACHE, EUR_CACHE, HUB_PROJECT
+    global WINDOW_DAYS, CURRENCY, SKILL_AREAS, CHECKS, OTEL_LOGS, TELEMETRY_ON
+    global RESTART_HINT, MARGINE_SCRITTURA, RILAV_GIORNI
+    CFG = config.init(_config_path())
+    flows.configure(CFG)
+    metrics.configure(CFG)
+    WS, SKILL_DIR = CFG.ws, CFG.skill_dir
+    PROJECTS_DIR, CLAUDE_MD = CFG.projects_dir, CFG.index_md
+    TRANSCRIPTS_ROOT, TRANSCRIPT_PREFIX = CFG.transcripts_root, CFG.transcript_prefix
+    OUT_JSON, OUT_HTML = CFG.out_json, CFG.out_html
+    CACHE, EUR_CACHE = CFG.cache_file, CFG.rate_cache
+    HUB_PROJECT, WINDOW_DAYS, CURRENCY = CFG.hub, CFG.window_days, CFG.currency
+    SKILL_AREAS, CHECKS = CFG.skill_areas, CFG.checks
+    TELEMETRY_ON, OTEL_LOGS = CFG.telemetry_enabled, CFG.telemetry_logs
+    RESTART_HINT = CFG.telemetry_restart_hint
+    MARGINE_SCRITTURA = CFG.th["margine_scrittura_sec"]
+    RILAV_GIORNI = CFG.th["rilavorazione_giorni"]
+    return CFG
 
-# la cartella che rappresenta l'utente (non un cliente) è esclusa dal conteggio
-# clienti e dai consigli: il nome sta nel config, non qui
-HUB_PROJECT = (CONFIG.get("hub_project") or "").strip()
-metrics.HUB_PROJECT = HUB_PROJECT
 
-WINDOW_DAYS = 30
-ATP_DIR = WS / "mcp" / "answerthepublic"
 MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
         "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"]
-
-SKILL_AREAS = {
-    "SEO & Contenuti": [
-        "articolo-seo-da-keyword",
-        "seo-copywriter",
-        "aeo-geo-italia",
-        "articolo-blog-personale",
-    ],
-    "YouTube & Video": [
-        "youtube-title-description",
-        "youtube-tag-optimizer",
-        "youtube-transcript-downloader",
-        "filiera-video-articolo",
-    ],
-    "Personal Brand": [
-        "estrai-spunti-personal-brand",
-        "approfondisci-spunti-personal-brand",
-    ],
-    "Ricerca & Competitor": [
-        "ubersuggest-keyword-analyzer",
-        "deep-research-multitool",
-        "analisi-landing-page",
-        "elenco-landing-page-partner",
-    ],
-    "Operatività cliente": [
-        "piano-operativo-da-call",
-    ],
-    "Deliverable & Dashboard": [
-        "deck-brandizzato-cliente",
-        "dashboard-cliente",
-        "dashboard-workspace",
-    ],
-}
 
 RE_LOG_ENTRY = re.compile(r'^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\] \(exit (\d+)\)')
 
@@ -130,11 +114,15 @@ def read_text(p):
 
 def parse_index():
     """Slug delle skill e nomi dei progetti linkati nell'indice CLAUDE.md."""
-    if not CLAUDE_MD.exists():
+    if not (CLAUDE_MD and CLAUDE_MD.exists()):
         return set(), set()
     md = read_text(CLAUDE_MD)
-    skills = {unquote(m) for m in re.findall(r'\(SKILL/([^/)]+)/SKILL\.md\)', md)}
-    projects = {unquote(m) for m in re.findall(r'\(Projects/([^/)]+)/CLAUDE\.md\)', md)}
+    sk_dir = re.escape(SKILL_DIR.name) if SKILL_DIR else None
+    pr_dir = re.escape(PROJECTS_DIR.name) if PROJECTS_DIR else None
+    skills = {unquote(m) for m in re.findall(rf'\({sk_dir}/([^/)]+)/SKILL\.md\)', md)} \
+        if sk_dir else set()
+    projects = {unquote(m) for m in re.findall(rf'\({pr_dir}/([^/)]+)/CLAUDE\.md\)', md)} \
+        if pr_dir else set()
     return skills, projects
 
 
@@ -142,8 +130,8 @@ def parse_index():
 
 def scan_skills(indexed_slugs):
     rows, anomalies = [], []
-    if not SKILL_DIR.is_dir():
-        return rows, ["Cartella SKILL/ non trovata"]
+    if not (SKILL_DIR and SKILL_DIR.is_dir()):
+        return rows, ["Cartella delle skill non trovata"]
     for d in sorted(SKILL_DIR.iterdir(), key=lambda p: p.name.lower()):
         if not d.is_dir() or d.name.startswith("."):
             continue
@@ -193,10 +181,10 @@ def scan_home_skills():
             continue
         if e.is_symlink():
             target = Path(os.path.realpath(e))
-            direct = SKILL_DIR / e.name
-            if direct.exists() and target == direct.resolve():
+            direct = (SKILL_DIR / e.name) if SKILL_DIR else None
+            if direct and direct.exists() and target == direct.resolve():
                 continue  # già coperta da scan_skills
-            if str(target).startswith(str(SKILL_DIR)):
+            if SKILL_DIR and str(target).startswith(str(SKILL_DIR)):
                 repo_links.append(e.name)
             elif not target.exists():
                 strays.append(e.name + " (symlink rotto)")
@@ -218,7 +206,7 @@ def scan_projects(indexed_names, chains=None):
         for out in s.get("outs") or []:
             project_divisions.setdefault(out[0], set()).update(s.get("divisions") or [])
     rows = []
-    if not PROJECTS_DIR.is_dir():
+    if not (PROJECTS_DIR and PROJECTS_DIR.is_dir()):
         return rows
     for d in sorted(PROJECTS_DIR.iterdir(), key=lambda p: p.name.lower()):
         if not d.is_dir() or d.name.startswith("."):
@@ -311,7 +299,7 @@ def scan_mcp():
             add(name, scope, kind, spec.get("env"), problem)
 
     load(WS / ".mcp.json", "workspace")
-    if PROJECTS_DIR.is_dir():
+    if PROJECTS_DIR and PROJECTS_DIR.is_dir():
         for d in sorted(PROJECTS_DIR.iterdir()):
             if d.is_dir():
                 load(d / ".mcp.json", d.name)
@@ -351,44 +339,42 @@ def scan_plugins():
 
 
 def scan_checks():
-    """Le "sveglie" del workspace: i controlli periodici registrati e il loro esito.
+    """Le "sveglie" del workspace: i controlli periodici dell'utente e il loro esito.
 
-    Ogni voce dice: cosa controlla, ogni quanto, com'è andata l'ultima volta e
-    quando riparte. Le sveglie nuove si aggiungono qui.
+    Ogni controllo è uno script suo (hook, cron, quel che vuole) che appende al
+    proprio log righe `[YYYY-MM-DD HH:MM] (exit N)`. Qui si legge l'ultima riga
+    e si traduce col dizionario `codes` del config. Un file `stamp` con dentro
+    `YYYY-MM` segna il mese già coperto. Senza controlli nel config, la card
+    resta vuota: è una sezione facoltativa.
     """
-    checks = []
-
-    # 1) Spec API AnswerThePublic — mensile, lanciata dall'hook a inizio sessione.
-    #    Esiti nel log: 0 = invariato, 10 = API cambiata, 1 = errore di rete.
-    last_run, last_code = "", None
-    log = ATP_DIR / "spec_watch.log"
-    if log.exists():
-        for line in read_text(log).splitlines():
-            m = RE_LOG_ENTRY.match(line)
-            if m:
-                d = m.group(1)
-                last_run = f"{d[8:10]}/{d[5:7]}/{d[0:4]} {d[11:]}"
-                last_code = int(m.group(2))
-    level, outcome = {
-        0: ("good", "ok — nessun cambiamento"),
-        10: ("warning", "API cambiata: server.py da rivedere"),
-        1: ("serious", "errore di rete: riprova alla prossima sessione"),
-    }.get(last_code, ("warning", "mai eseguita"))
-    now = datetime.now()
-    stamp = ATP_DIR / ".last_spec_check"
-    done_this_month = stamp.exists() and stamp.read_text().strip() == now.strftime("%Y-%m")
-    next_due = f"prima sessione di {MESI[now.month % 12]}" if done_this_month \
-        else "alla prossima sessione"
-    checks.append({
-        "name": "Spec API AnswerThePublic",
-        "what": "l'API su cui poggia il server MCP è cambiata?",
-        "cadence": "mensile (a inizio sessione)",
-        "last_run": last_run or "—",
-        "level": level,
-        "outcome": outcome,
-        "next": next_due,
-    })
-    return checks
+    out = []
+    for c in CHECKS:
+        last_run, last_code = "", None
+        log = Path(c["log"]).expanduser() if c.get("log") else None
+        if log and log.exists():
+            for line in read_text(log).splitlines():
+                m = RE_LOG_ENTRY.match(line)
+                if m:
+                    d = m.group(1)
+                    last_run = f"{d[8:10]}/{d[5:7]}/{d[0:4]} {d[11:]}"
+                    last_code = int(m.group(2))
+        codes = {str(k): v for k, v in (c.get("codes") or {}).items()}
+        esito = codes.get(str(last_code)) or ["warning", "mai eseguita"]
+        now = datetime.now()
+        stamp = Path(c["stamp"]).expanduser() if c.get("stamp") else None
+        fatto_questo_mese = bool(stamp and stamp.exists()
+                                 and read_text(stamp).strip() == now.strftime("%Y-%m"))
+        out.append({
+            "name": c.get("name", "Controllo senza nome"),
+            "what": c.get("what", ""),
+            "cadence": c.get("cadence", ""),
+            "last_run": last_run or "—",
+            "level": esito[0],
+            "outcome": esito[1],
+            "next": (f"prima sessione di {MESI[now.month % 12]}" if fatto_questo_mese
+                     else "alla prossima sessione"),
+        })
+    return out
 
 
 # ---------------------------------------------------------------- orchestratori
@@ -506,14 +492,6 @@ def scan_usage():
 
 # ------------------------------------------------------------------ telemetria
 
-# La sonda vive in ~/.claude/otel (fuori da Documents: launchd non può leggere
-# le cartelle protette dalla privacy di macOS). Lo scanner, che gira in sessione,
-# può leggere entrambe le posizioni.
-OTEL_DIR = Path.home() / ".claude" / "otel"
-OTEL_LOGS = [OTEL_DIR / "otel_probe.1.jsonl", OTEL_DIR / "otel_probe.jsonl"]
-EUR_CACHE = HERE / ".eur_rate.json"
-
-
 def get_eur_rate():
     """Cambio USD→EUR del giorno (dati BCE via frankfurter.app). La telemetria
     riporta i costi solo in dollari: la conversione è di cortesia. Se la rete
@@ -579,10 +557,6 @@ def scan_telemetry():
 
 
 # ------------------------------------------------------------------- consegne
-
-MARGINE_SCRITTURA = 3600   # 1h: oltre, una modifica al file è considerata tua
-RILAV_GIORNI = 7           # riscrittura in altra sessione entro 7gg = rilavorata
-
 
 def scan_consegne(chains):
     """Registro delle consegne della finestra, per le metriche di attrito.
@@ -733,6 +707,7 @@ def build_alerts(skills, anomalies, strays, projects, mcp, checks, mcp_use):
 # ----------------------------------------------------------------------- main
 
 def main():
+    _setup()
     indexed_skills, indexed_projects = parse_index()
     skills, anomalies = scan_skills(indexed_skills)
     official, strays, repo_links = scan_home_skills()
@@ -747,9 +722,10 @@ def main():
     mcp_use = {u["name"]: u["n"] for u in use_mcp}
     flussi = flows.build(chains)
     orchestrators = scan_orchestrators([s["name"] for s in skills], chains)
-    telemetry = scan_telemetry()
+    telemetry = scan_telemetry() if TELEMETRY_ON else None
     consegne = scan_consegne(chains)
-    eur_rate, eur_date = get_eur_rate() if telemetry else (None, "")
+    eur_rate, eur_date = (get_eur_rate()
+                          if telemetry and CURRENCY == "EUR" else (None, ""))
     alerts = build_alerts(skills, anomalies, strays, projects, mcp, checks, mcp_use)
 
     # sonda telemetria spenta? Le sessioni continuano ma i costi non arrivano più
@@ -760,9 +736,8 @@ def main():
                 "level": "warning", "peso": PESO_ALERT["warning"],
                 "skill": None, "project": None, "divisions": [],
                 "text": "Sonda telemetria spenta: nessun dato di costo da "
-                        f"{telemetry['last']} ma le sessioni continuano — riavvia il "
-                        "LaunchAgent: launchctl load ~/Library/LaunchAgents/"
-                        "com.salvatore.claude-otel-probe.plist"})
+                        f"{telemetry['last']} ma le sessioni continuano — "
+                        f"{RESTART_HINT}"})
             alerts["riparare"].sort(key=lambda a: -a["peso"])
 
     met = metrics.compute(
@@ -869,6 +844,7 @@ def main():
         "window_days": WINDOW_DAYS,
         "window_from": datefmt(time.time() - WINDOW_DAYS * 86400),
         "window_to": datefmt(time.time()),
+        "brand": CFG.brand,   # titolo e sottotitolo della pagina, dal config
         "hub": HUB_PROJECT,   # il template le mette il chip «hub» invece di «attivo»
         "inventory": {
             "skills": len(skills),

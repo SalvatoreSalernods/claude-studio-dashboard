@@ -37,16 +37,38 @@ from pathlib import Path
 import flows
 
 HERE = Path(__file__).resolve().parent
-STORICO = HERE / "storico.json"
 
-HUB_PROJECT = ""                     # cartella-hub di chi usa la dashboard (rappresenta
-                                     # lui, non un cliente): la imposta scan.py leggendo
-                                     # la voce "hub_project" del config. Vuoto = nessuna
-                                     # cartella esclusa dal conteggio clienti.
-FREDDO_GIORNI = 14
+# Valori di partenza: li sostituisce configure(), che scan.py chiama all'avvio
+# col config dell'utente. Qui non vive nessun nome e nessun percorso di nessuno.
+STORICO = HERE / "storico.json"
+HUB_PROJECT = ""                     # cartella che rappresenta l'utente, non un cliente
+FREDDO_GIORNI = 14                   # cadenza d'uso attesa, salvo override per cliente
+CADENZA_CLIENTI = {}                 # nome progetto -> giorni attesi per quel cliente
 GRACE_SKILL_GIORNI = 7               # una skill nuova non è "ferma" nei primi giorni
 BANCO_GIORNI = 60                    # skill/orchestratori sotto osservazione ROI
 SOGLIA_VIVAIO = 3                    # consegne libere simili per proporre una skill
+
+
+def configure(cfg):
+    """Prende dal config dell'utente ciò che dipende dal SUO workspace: dove
+    tenere lo storico, qual è la cartella-hub, ogni quanto si aspetta che un
+    cliente passi da Claude Code. Le soglie di progetto restano di default se
+    il config non le tocca."""
+    global STORICO, HUB_PROJECT, FREDDO_GIORNI, CADENZA_CLIENTI
+    global GRACE_SKILL_GIORNI, BANCO_GIORNI, SOGLIA_VIVAIO
+    STORICO = cfg.storico_file
+    HUB_PROJECT = cfg.hub
+    CADENZA_CLIENTI = cfg.cadenza_clienti
+    FREDDO_GIORNI = cfg.th["freddo_giorni"]
+    GRACE_SKILL_GIORNI = cfg.th["grace_skill_giorni"]
+    BANCO_GIORNI = cfg.th["banco_giorni"]
+    SOGLIA_VIVAIO = cfg.th["soglia_vivaio"]
+
+
+def cadenza(nome):
+    """Ogni quanti giorni ci si aspetta che quel cliente passi da Claude Code:
+    il default globale, o la cadenza fissata per lui in cadenza_clienti."""
+    return CADENZA_CLIENTI.get(nome, FREDDO_GIORNI)
 
 
 # --------------------------------------------------------------------- storico
@@ -128,7 +150,7 @@ def compute_by_division_extended(chains, projects, alerts, consegne_files=None):
         served = [p for p in projects if div in p.get("divisions", [])]
         # "attivi" = passati da Claude Code nella cadenza attesa, non "clienti vivi"
         active = [p for p in served if p.get("days_since") is not None
-                  and p["days_since"] <= FREDDO_GIORNI]
+                  and p["days_since"] <= cadenza(p["name"])]
         copertura = _pct(len(active), len(served))
         indice = None
         if None not in (metodo, conformita, copertura):
@@ -267,7 +289,8 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     #     La chiave "freddi" resta tale per compatibilità con storico.json.
     clienti = [p for p in projects if p["name"] != HUB_PROJECT]
     freddi = [p["name"] for p in clienti
-              if p.get("days_since") is None or p["days_since"] > FREDDO_GIORNI]
+              if p.get("days_since") is None
+              or p["days_since"] > cadenza(p["name"])]
     copertura = _pct(len(clienti) - len(freddi), len(clienti))
 
     # --- strumenti: 100 − penalità degli alert "da riparare"

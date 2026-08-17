@@ -122,6 +122,24 @@ cp config.example.json /percorso/workspace/dashboard/config.json  # e adattalo
 python3 engine/scan.py --config /percorso/workspace/dashboard/config.json
 ```
 
+### Il primo scan: cosa aspettarti
+
+Nel config è obbligatoria una sola voce: `workspace`. Tutto il resto ha un
+default sensato, e le mappe curate (`flow_names`, `flow_tags`, `flow_phases`,
+`skill_areas`) partono vuote **apposta**: senza di loro la dashboard funziona
+lo stesso, perché i flussi vengono dedotti dai diari, ogni flusso prende il
+nome della skill e finisce in «Da classificare». Quelle mappe servono a
+raccontare *meglio* il tuo lavoro, quando avrai visto cosa esce.
+
+Cosa vedrai al primo giro, ed è normale: le tile che dipendono dallo storico
+diranno «stabile» (lo storico nasce con questo scan), il grafico Andamento avrà
+un punto solo, e le metriche di attrito compariranno appena ci saranno consegne
+nella finestra. Se una cartella indicata nel config non esiste, quella sezione
+resta vuota invece di far fallire lo scan: la pagina esce comunque.
+
+I costi reali richiedono la sonda di telemetria (`telemetry/README.md`, macOS):
+senza, al suo posto trovi il proxy «Peso per consegna» in KB.
+
 ## Uso quotidiano
 
 - **«aggiorna la dashboard»** → scan + ripubblicazione sullo stesso URL.

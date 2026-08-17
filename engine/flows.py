@@ -18,10 +18,12 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-WS = Path("/Users/salvatore/Documents/Claude")
-PROJ_PREFIX = str(WS / "Projects") + "/"
+# Punto di partenza: li sostituisce configure(), chiamata da scan.py col config
+# dell'utente. Nel codice non c'è il workspace di nessuno.
+WS = None
+PROJ_PREFIX = ""     # prefisso della cartella progetti: identifica le "consegne"
 
-# File "consegna" quando scritti dentro Projects/ con queste estensioni.
+# File "consegna" quando scritti dentro la cartella progetti con queste estensioni.
 DELIV_EXTS = {".md", ".xlsx", ".docx", ".pdf", ".csv", ".pptx", ".html"}
 
 # File-dato: se letti senza essere stati scritti nella stessa sessione contano
@@ -30,9 +32,7 @@ DATA_EXTS = (".csv", ".xlsx", ".xls", ".tsv")
 
 # Consegne generate da script: cerco path di Projects dentro i comandi Bash.
 # Gruppi: 1 = progetto, 2 = resto del percorso relativo, 3 = estensione.
-RE_BASH_OUT = re.compile(
-    re.escape(PROJ_PREFIX) + r'([^/"\';]+)/([^"\';]*?(\.(?:md|xlsx|docx|pdf|csv|pptx|html)))\b'
-)
+RE_BASH_OUT = None   # dipende dal prefisso dei progetti: la compila configure()
 
 # File-dato letti da script Bash fuori da Projects (Downloads, Desktop…).
 RE_BASH_DATA = re.compile(r'[\'"\s=]((?:/|~/)[^\'";|<>]*?\.(?:csv|xlsx|xls|tsv))\b')
@@ -48,6 +48,7 @@ MCP_LABEL = {
     "claude_ai_Canva": "Canva",
 }
 SKIP_MCP = {"ccd_session"}  # servizio interno, rumore
+
 
 # Nome breve dei servizi MCP, per le etichette per-fase.
 MCP_SHORT = {
@@ -71,55 +72,21 @@ UTILITY_SKILLS = {
     "verify", "simplify", "code-review", "schedule", "loop", "setup-cowork",
 }
 
-# Nome "di finalità" per ogni famiglia di flusso: dice a cosa serve il lavoro,
-# non come si chiama la skill. Fallback: lo slug della skill.
-FLOW_NAMES = {
-    "piano-operativo-da-call": "Dalla call al piano operativo del cliente",
-    "ubersuggest-keyword-analyzer": "Dalla keyword alla strategia contenuti",
-    "deep-research-multitool": "Ricerca approfondita → dossier per il cliente",
-    "analisi-landing-page": "Teardown landing dei competitor → blueprint",
-    "elenco-landing-page-partner": "Mappa delle landing di partnership",
-    "articolo-seo-da-keyword": "Dalla keyword all'articolo pronto",
-    "filiera-video-articolo": "Dal video al kit completo: titolo, tag e articolo",
-    "seo-copywriter": "Scrittura contenuti SEO",
-    "estrai-spunti-personal-brand": "Dalle call agli spunti LinkedIn",
-    "approfondisci-spunti-personal-brand": "Dallo spunto al dossier per il post",
-    "aeo-geo-italia": "Visibilità nei motori AI (AEO/GEO)",
-    "youtube-title-description": "Titolo e descrizione per YouTube",
-    "youtube-tag-optimizer": "Tag YouTube per i correlati",
-    "youtube-transcript-downloader": "Scarico trascrizioni YouTube",
-    "dashboard-workspace": "Aggiornamento della dashboard workspace",
-    "skill-creator:skill-creator": "Garage: costruzione di nuove skill",
-    "dataviz": "Grafica dati e visualizzazioni",
-    "update-config": "Configurazione di Claude Code",
-    "xlsx": "Lavorazione fogli Excel",
+# Nome "di finalità" di ogni famiglia di flusso: dice a cosa serve il lavoro,
+# non come si chiama la skill. Dal config (voce "flow_names"); senza, vale lo
+# slug della skill.
+FLOW_NAMES = {}
+
+# Le uniche etichette che il motore conosce da sé: non sono skill di nessuno.
+BUILTIN_FLOW_NAMES = {
     "_libero": "Lavoro libero (senza ricetta codificata)",
+    "_chat": "Conversazione (nessuna consegna)",
 }
 
 
-# Divisioni del lavoro di Salvatore: ogni flusso appartiene a 1-2 divisioni
-# (la prima è quella principale). Lista concordata il 7/7/2026. I flussi non
-# mappati compaiono come "Da classificare": aggiungerli qui appena nascono.
-FLOW_TAGS = {
-    "ubersuggest-keyword-analyzer": ["SEO & AEO"],
-    "articolo-seo-da-keyword": ["SEO & AEO", "Content"],
-    "seo-copywriter": ["SEO & AEO", "Content"],
-    "aeo-geo-italia": ["SEO & AEO"],
-    "filiera-video-articolo": ["Video & YouTube", "SEO & AEO"],
-    "youtube-title-description": ["Video & YouTube"],
-    "youtube-tag-optimizer": ["Video & YouTube"],
-    "youtube-transcript-downloader": ["Video & YouTube"],
-    "analisi-landing-page": ["Advertising"],
-    "elenco-landing-page-partner": ["Strategia", "SEO & AEO"],
-    "deep-research-multitool": ["Strategia"],
-    "piano-operativo-da-call": ["Gestione clienti", "Social"],
-    "estrai-spunti-personal-brand": ["Personal Brand"],
-    "approfondisci-spunti-personal-brand": ["Personal Brand"],
-    "dashboard-workspace": ["Claude Code Garage"],
-    "skill-creator:skill-creator": ["Claude Code Garage"],
-    "update-config": ["Claude Code Garage"],
-    "marketing:seo-audit": ["SEO & AEO"],
-}
+# Divisioni del lavoro per flusso (1-2, la prima è la principale). Dal config
+# (voce "flow_tags"); i flussi non mappati compaiono come "Da classificare".
+FLOW_TAGS = {}
 
 
 def _tags_for(key):
@@ -170,154 +137,32 @@ def _session_tags(session):
     """Divisioni già inferite, con fallback compatibile per vecchi chiamanti."""
     return session.get("divisions") or _tags_for(_family_key(session.get("chain") or []))
 
-# Mappa-processo curata per i flussi conosciuti: le ATTIVITÀ che compongono il
-# processo (anche quelle fuori sessione, fatte da Salvatore), non gli strumenti.
-# who/kind: "tu" = attività di Salvatore · skill/mcp/web/in/out/artifact = come sopra.
-# "detect": eventi che, se presenti nel diario, dicono che la fase è avvenuta →
-# da lì la frequenza. Le fasi senza "detect" sono parte della ricetta (es. la
-# registrazione della call avviene prima di ogni sessione).
-FLOW_PHASES = {
-    "piano-operativo-da-call": [
-        {"label": "Registrazione della call di allineamento col team", "kind": "tu"},
-        {"label": "Analisi della trascrizione e del contesto cliente", "kind": "skill",
-         "tool": "piano-operativo-da-call",
-         "detect": ["skill:piano-operativo-da-call", "in:trascrizione"]},
-        {"label": "Redazione report, task per persona e piano editoriale", "kind": "skill",
-         "tool": "piano-operativo-da-call",
-         "detect": ["skill:piano-operativo-da-call"]},
-        {"label": "Consegna nella cartella cliente (report .md + piano .xlsx)",
-         "kind": "out", "detect": ["out"]},
-        {"label": "Su tua conferma: estrazione spunti LinkedIn dalla stessa call",
-         "kind": "tu", "tool": "estrai-spunti-personal-brand",
-         "detect": ["skill:estrai-spunti-personal-brand"]},
-    ],
-    "ubersuggest-keyword-analyzer": [
-        {"label": "Scelta del tema e del cliente (keyword di partenza)", "kind": "tu"},
-        {"label": "Raccolta dati keyword: volumi, domande, competitor", "kind": "mcp",
-         "tool": "Ubersuggest + AnswerThePublic",
-         "detect": ["mcp:claude_ai_Ubersuggest_MCP", "mcp:answerthepublic"]},
-        {"label": "Analisi e scoring: cluster, canali, priorità", "kind": "skill",
-         "tool": "ubersuggest-keyword-analyzer",
-         "detect": ["skill:ubersuggest-keyword-analyzer"]},
-        {"label": "Consegna della strategia (report + Excel operativo)",
-         "kind": "out", "detect": ["out"]},
-    ],
-    "deep-research-multitool": [
-        {"label": "Definizione della domanda di ricerca", "kind": "tu"},
-        {"label": "Raccolta multi-fonte e verifica dei dati", "kind": "web",
-         "tool": "deep-research-multitool",
-         "detect": ["skill:deep-research-multitool", "web"]},
-        {"label": "Consolidamento in dossier con fonti", "kind": "skill",
-         "tool": "deep-research-multitool",
-         "detect": ["skill:deep-research-multitool"]},
-        {"label": "Consegna del dossier nel progetto", "kind": "out", "detect": ["out"]},
-    ],
-    "analisi-landing-page": [
-        {"label": "Scelta delle landing competitor (URL o screenshot)", "kind": "tu"},
-        {"label": "Smontaggio della pagina sezione per sezione", "kind": "web",
-         "tool": "analisi-landing-page",
-         "detect": ["skill:analisi-landing-page", "web"]},
-        {"label": "Scorecard CRO e blueprint replicabile", "kind": "skill",
-         "tool": "analisi-landing-page",
-         "detect": ["skill:analisi-landing-page"]},
-        {"label": "Consegna dell'audit nel progetto", "kind": "out", "detect": ["out"]},
-    ],
-    "skill-creator:skill-creator": [
-        {"label": "Individuazione di un lavoro ripetuto da codificare", "kind": "tu"},
-        {"label": "Progettazione e scrittura della skill", "kind": "skill",
-         "tool": "skill-creator", "detect": ["skill:skill-creator:skill-creator"]},
-        {"label": "Collaudo su un caso reale", "kind": "tu"},
-        {"label": "Collegamento al workspace (symlink + riga in CLAUDE.md)",
-         "kind": "out", "detect": ["out"]},
-    ],
-    "dashboard-workspace": [
-        {"label": "Tua richiesta di aggiornamento", "kind": "tu"},
-        {"label": "Scansione del workspace (skill, progetti, uso, controlli)",
-         "kind": "skill", "tool": "dashboard-workspace",
-         "detect": ["skill:dashboard-workspace"]},
-        {"label": "Ripubblicazione della pagina (stesso URL)", "kind": "artifact",
-         "detect": ["artifact"]},
-    ],
-    "articolo-seo-da-keyword": [
-        {"label": "Keyword e cliente scelti, cartella Blog/<slug> creata", "kind": "tu"},
-        {"label": "Keyword research: volumi, cluster, domande", "kind": "mcp",
-         "tool": "Ubersuggest",
-         "detect": ["mcp:claude_ai_Ubersuggest_MCP", "skill:ubersuggest-keyword-analyzer"]},
-        {"label": "Deep research sui temi del cluster", "kind": "web",
-         "detect": ["web", "skill:deep-research-multitool"]},
-        {"label": "Brief dell'articolo — con tuo ok prima di scrivere", "kind": "tu",
-         "tool": "seo-copywriter", "detect": ["skill:seo-copywriter"]},
-        {"label": "Scrittura dell'articolo completo + schema", "kind": "skill",
-         "tool": "seo-copywriter", "detect": ["skill:seo-copywriter"]},
-        {"label": "Consegna in Blog/<slug>/", "kind": "out", "detect": ["out"]},
-    ],
-    "filiera-video-articolo": [
-        {"label": "Video pronto: trascrizione o brief", "kind": "tu"},
-        {"label": "Keyword research condivisa video + articolo", "kind": "mcp",
-         "tool": "Ubersuggest",
-         "detect": ["mcp:claude_ai_Ubersuggest_MCP", "skill:ubersuggest-keyword-analyzer"]},
-        {"label": "Titolo e descrizione YouTube — con tuo ok", "kind": "tu",
-         "tool": "youtube-title-description",
-         "detect": ["skill:youtube-title-description"]},
-        {"label": "Brief e articolo companion — con tuo ok", "kind": "tu",
-         "tool": "seo-copywriter", "detect": ["skill:seo-copywriter"]},
-        {"label": "Tag calcolati sul titolo definitivo", "kind": "skill",
-         "tool": "youtube-tag-optimizer", "detect": ["skill:youtube-tag-optimizer"]},
-        {"label": "Consegna del kit in Video/<slug>/", "kind": "out", "detect": ["out"]},
-    ],
-    "youtube-title-description": [
-        {"label": "Trascrizione o brief del video", "kind": "tu"},
-        {"label": "Focus keyword, titolo (con variante) e descrizione", "kind": "skill",
-         "tool": "youtube-title-description",
-         "detect": ["skill:youtube-title-description"]},
-        {"label": "Consegna metadati pronti da incollare", "kind": "out", "detect": ["out"]},
-    ],
-    "youtube-tag-optimizer": [
-        {"label": "Titolo definitivo del video", "kind": "tu"},
-        {"label": "Ricerca dei video-àncora e dei loro tag reali", "kind": "web",
-         "tool": "youtube-tag-optimizer",
-         "detect": ["skill:youtube-tag-optimizer", "web"]},
-        {"label": "Consegna del set di tag", "kind": "out", "detect": ["out"]},
-    ],
-    "estrai-spunti-personal-brand": [
-        {"label": "Call già lavorata: stessa trascrizione, nuovo uso", "kind": "tu"},
-        {"label": "Pesca dei tuoi ragionamenti da strategist", "kind": "skill",
-         "tool": "estrai-spunti-personal-brand",
-         "detect": ["skill:estrai-spunti-personal-brand"]},
-        {"label": "Schede-spunto + Content Bank aggiornata", "kind": "out",
-         "detect": ["out"]},
-    ],
-    "approfondisci-spunti-personal-brand": [
-        {"label": "Scelta dello spunto (S-NNNN) o del tema ricorrente", "kind": "tu"},
-        {"label": "Ricerca: dati con fonte, esempi, contro-argomenti", "kind": "web",
-         "tool": "approfondisci-spunti-personal-brand",
-         "detect": ["skill:approfondisci-spunti-personal-brand", "web"]},
-        {"label": "Consegna dossier + brief per la scrittura", "kind": "out",
-         "detect": ["out"]},
-    ],
-    "elenco-landing-page-partner": [
-        {"label": "URL della directory partner del vendor", "kind": "tu"},
-        {"label": "Estrazione elenco e apertura di ogni sito partner", "kind": "web",
-         "tool": "apify / curl", "detect": ["web", "mcp:apify"]},
-        {"label": "Classificazione delle pagine di partnership", "kind": "skill",
-         "tool": "elenco-landing-page-partner",
-         "detect": ["skill:elenco-landing-page-partner"]},
-        {"label": "Consegna report + Excel (Parte 2: blueprint)", "kind": "out",
-         "detect": ["out"]},
-    ],
-    "aeo-geo-italia": [
-        {"label": "Pagina o dominio da valutare nei motori AI", "kind": "tu"},
-        {"label": "Audit GEO/AEO e riscrittura answer-first", "kind": "skill",
-         "tool": "aeo-geo-italia", "detect": ["skill:aeo-geo-italia"]},
-        {"label": "Consegna audit + schema JSON-LD", "kind": "out", "detect": ["out"]},
-    ],
-    "seo-copywriter": [
-        {"label": "Brief, keyword e contesto cliente", "kind": "tu"},
-        {"label": "Scrittura o revisione del contenuto SEO", "kind": "skill",
-         "tool": "seo-copywriter", "detect": ["skill:seo-copywriter"]},
-        {"label": "Consegna del testo pronto", "kind": "out", "detect": ["out"]},
-    ],
-}
+# Mappe-processo curate: per ogni skill, le attività del processo reale (comprese
+# quelle che avvengono fuori da Claude Code). Vengono dal config dell'utente
+# (voce "flow_phases"); senza mappa, le fasi si deducono dai diari.
+FLOW_PHASES = {}
+
+
+def configure(cfg):
+    """Riempie col config dell'utente tutto ciò che dipende dal SUO workspace:
+    dove stanno i progetti, come si chiamano i suoi flussi, in quali divisioni
+    li colloca. Le etichette generiche dei servizi restano quelle del motore,
+    con le sue in aggiunta."""
+    global WS, PROJ_PREFIX, DELIV_EXTS, AGENT_MIN_EVENTS, RE_BASH_OUT
+    global FLOW_NAMES, FLOW_TAGS, FLOW_PHASES, UTILITY_SKILLS
+    WS = cfg.ws
+    PROJ_PREFIX = cfg.proj_prefix
+    DELIV_EXTS = set(cfg.deliv_exts)
+    AGENT_MIN_EVENTS = cfg.th["agent_min_events"]
+    FLOW_NAMES = {**BUILTIN_FLOW_NAMES, **cfg.flow_names}
+    FLOW_TAGS = dict(cfg.flow_tags)
+    FLOW_PHASES = dict(cfg.flow_phases)
+    UTILITY_SKILLS = UTILITY_SKILLS | set(cfg.utility_skills)
+    MCP_LABEL.update(cfg.mcp_labels)
+    MCP_SHORT.update(cfg.mcp_labels)
+    ext = "|".join(e.lstrip(".") for e in sorted(DELIV_EXTS))
+    RE_BASH_OUT = re.compile(
+        re.escape(PROJ_PREFIX) + r'([^/"\';]+)/([^"\';]*?(\.(?:' + ext + r')))\b')
 
 
 def _epoch(o):
