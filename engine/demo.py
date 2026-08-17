@@ -146,8 +146,9 @@ def build():
         {"id": "metodo", "label": "Quota di metodo", "value": metodo,
          "unit": "%", "delta": delta("metodo"),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
-        {"id": "freddi", "label": "Clienti da verificare", "value": 1, "unit": "",
-         "delta": {"text": "stabile", "dir": "flat"}, "note": "B&B Riviera"},
+        {"id": "freddi", "label": "Clienti senza Claude Code", "value": 1,
+         "unit": "", "delta": {"text": "stabile", "dir": "flat"},
+         "note": "B&B Riviera"},
         {"id": "peso", "label": "Costo per consegna", "value": costo_consegna,
          "unit": " €", "delta": delta("costo", up_is_good=False, dec=2),
          "note": f"{cost:.2f} $ ≈ {cost_eur:.2f} € (cambio BCE {rate_date}) per "
@@ -384,10 +385,11 @@ def build():
         {"tags": ["Skill", "Metodo"],
          "text": "Orchestratore da creare: articolo-blog-seo + audit-sito-web "
                  "(insieme in 2 sessioni)", "ora": True},
-        {"tags": ["Clienti"],
-         "text": "B&B Riviera è fermo da 21 giorni (cadenza attesa: ≤14gg): "
-                 "una call o un contenuto "
-                 "questa settimana vale più di qualsiasi metrica.", "ora": True},
+        {"tags": ["Clienti", "Claude Code"],
+         "text": "Su B&B Riviera non passi da Claude Code da 21 giorni "
+                 "(cadenza attesa: ≤14gg): se ci stai lavorando lo stesso, "
+                 "guarda quale parte di quel lavoro può passare da una skill "
+                 "o da un flusso.", "ora": True},
         {"tags": ["Claude Code", "Consumi"],
          "text": "Una sessione = un lavoro: apri una sessione nuova per ogni "
                  "lavoro diverso invece di allungarne una sola. Contesti più "
@@ -434,7 +436,7 @@ def build():
         "trend": {"points": points,
                   "series": [{"key": "salute", "label": "Indice", "color": "acc"},
                              {"key": "metodo", "label": "Metodo %", "color": "blu"},
-                             {"key": "copertura", "label": "Copertura clienti %",
+                             {"key": "copertura", "label": "Copertura Claude Code %",
                               "color": "aqua"}]},
         "advice": advice,
         "alerts": alerts,

@@ -37,7 +37,8 @@ DEFAULTS = {
     "currency": "EUR",            # valuta di vetrina per i costi ("USD" = niente cambio)
     "deliverable_exts": [".md", ".xlsx", ".docx", ".pdf", ".csv", ".pptx", ".html"],
     "thresholds": {
-        "freddo_giorni": 14,        # cliente fermo da più di N giorni = da verificare
+        "freddo_giorni": 14,        # nessuna lavorazione passata da Claude Code da
+                                    # più di N giorni = cliente "senza Claude Code"
                                     # (default globale; override in cadenza_clienti)
         "grace_skill_giorni": 7,    # una skill appena nata non è "ferma"
         "banco_giorni": 60,         # skill nuove sotto osservazione ROI
@@ -50,8 +51,10 @@ DEFAULTS = {
     },
 
     # --- personalizzazioni del racconto (tutte opzionali)
-    "cadenza_clienti": {},        # nome progetto -> giorni di cadenza attesa
-                                  # (clienti mensili, stagionali, in pausa...)
+    "cadenza_clienti": {},        # nome progetto -> ogni quanti giorni ti aspetti
+                                  # che quel cliente passi da Claude Code (mensili,
+                                  # stagionali, in pausa, o lavorati fuori dal
+                                  # workspace)
     "mcp_labels": {},             # chiave-diario MCP -> etichetta leggibile
     "utility_skills": [],         # skill-attrezzo extra (oltre alle built-in note)
     "flow_names": {},             # slug skill -> nome "di finalità" del flusso

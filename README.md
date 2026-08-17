@@ -8,17 +8,27 @@ sistematico, dove resta manuale e cosa conviene automatizzare.**
 Uno scanner locale legge i metadati del tuo workspace — diari di sessione,
 cartelle dei clienti, connettori, telemetria — e produce una pagina web privata
 con i numeri che servono a decidere. Intorno a questo nucleo, i moduli di
-contorno: quanto ti costa ogni consegna, quali clienti sono fermi oltre il loro
-ritmo, cosa è rotto negli strumenti. Zero inserimento manuale di dati.
+contorno: quanto ti costa ogni consegna, per quali clienti Claude Code non sta
+producendo niente da più del loro ritmo abituale, cosa è rotto negli strumenti.
+Zero inserimento manuale di dati.
 
-**Requisiti** · Claude Code + un workspace organizzato a cartelle · Python 3
-(già presente su macOS) · il modulo costi reali è per ora solo macOS · UI e
+**Un confine da tenere presente:** tutto qui dentro misura *il lavoro che passa
+da Claude Code*. Un cliente che non compare non è un cliente fermo — è un
+cliente che stai lavorando fuori dal workspace, e quel lavoro la dashboard non
+lo vede né pretende di vederlo.
+
+**Requisiti** · Claude Code + un workspace organizzato a cartelle · Python 3, zero
+dipendenze esterne (già presente su macOS e sulla gran parte delle distribuzioni
+Linux; su Windows si installa da [python.org](https://www.python.org/downloads/)) ·
+**sviluppata e testata su macOS**: su Linux gira con due misure in meno, su Windows
+non è testata (contributi benvenuti) — [dettagli sotto](#limiti-dichiarati) · UI e
 documentazione in italiano.
 
 > **English** — A local, zero-dependency dashboard that shows where your
 > Claude Code work is already systematic, where it is still manual, and what
-> is worth automating — plus real cost per delivery, clients drifting past
-> their expected cadence, workflow maps and actionable advice. Scanned from
+> is worth automating — plus real cost per delivery, which clients Claude Code
+> has not produced anything for past their expected cadence (adoption, not
+> account health), workflow maps and actionable advice. Scanned from
 > local metadata only (no file contents, no conversation text ever leaves
 > your machine). Setup is a guided interview (`dashboard-setup` skill) that
 > adapts to how YOUR workspace is organized. UI and docs are in Italian for
@@ -37,9 +47,9 @@ Le 5 tile in alto:
 
 | Tile | Domanda a cui risponde |
 |---|---|
-| **Indice operativo** (0–100) | come sto messo, a semaforo? verde ≥80 · giallo 60–79 · rosso <60. Misura affidabilità e ripetibilità, non solo quanto usi Claude: `0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura clienti`, dove l'Affidabilità è la «prima stesura buona» (sotto). I pesi sono una scelta dichiarata, non una misura scientifica: la nota mostra sempre gli ingredienti. Senza consegne valutabili nella finestra vale la formula a tre (`0,40/0,30/0,30`) |
+| **Indice operativo** (0–100) | come sto messo, a semaforo? verde ≥80 · giallo 60–79 · rosso <60. Misura affidabilità e ripetibilità, non solo quanto usi Claude: `0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura Claude Code`, dove l'Affidabilità è la «prima stesura buona» (sotto). I pesi sono una scelta dichiarata, non una misura scientifica: la nota mostra sempre gli ingredienti. Senza consegne valutabili nella finestra vale la formula a tre (`0,40/0,30/0,30`) |
 | **Quota di metodo** | quanta parte del lavoro segue una ricetta scritta (skill) invece dell'improvvisazione? |
-| **Clienti da verificare** | quali clienti sono fermi oltre la loro cadenza attesa? (la lista delle telefonate da fare — la cadenza si può fissare cliente per cliente) |
+| **Clienti senza Claude Code** | per quali clienti Claude Code non ha prodotto niente oltre la loro cadenza attesa? (dove *non* arriva il metodo: il lavoro fatto fuori dal workspace non si vede — la cadenza si può fissare cliente per cliente) |
 | **Costo per consegna** | quanto mi costa di Claude ogni file consegnato? (telemetria reale; senza, un proxy in KB) |
 | **Da riparare** | quanti problemi concreti toccano gli strumenti in questo momento? |
 
@@ -133,11 +143,11 @@ principali:
 | `projects_dir` | cartella dei progetti/clienti | `Projects` |
 | `skills_dir` | cartella delle skill nel workspace (con symlink in `~/.claude/skills`); `""` = le skill vivono direttamente in `~/.claude/skills` | `SKILL` |
 | `index_file` | indice del workspace che linka skill e progetti; `""` = nessuno (niente alert di indicizzazione) | `CLAUDE.md` |
-| `hub_project` | la cartella che rappresenta te (non un cliente): esclusa da "clienti da verificare" | *(vuoto)* |
+| `hub_project` | la cartella che rappresenta te (non un cliente): esclusa dalla copertura e dai "clienti senza Claude Code" | *(vuoto)* |
 | `brand` | titolo e sottotitolo della pagina | — |
 | `currency` | valuta di vetrina per i costi (conversione dal USD col cambio BCE del giorno) | `EUR` |
-| `thresholds` | tutte le soglie (cliente da verificare, vivaio, sanguisughe…) | vedi esempio |
-| `cadenza_clienti` | cadenza attesa per singolo cliente, in giorni (mensili, stagionali, in pausa…): sostituisce `freddo_giorni` per quel cliente | `{}` |
+| `thresholds` | tutte le soglie (cadenza d'uso per cliente, vivaio, sanguisughe…) | vedi esempio |
+| `cadenza_clienti` | ogni quanto ti aspetti che un cliente passi da Claude Code, in giorni (mensili, stagionali, in pausa, o lavorati per lo più fuori dal workspace): sostituisce `freddo_giorni` per quel cliente | `{}` |
 | `flow_names` | nome "di finalità" per i flussi delle tue skill (es. `articolo-blog-seo` → "Dal brief all'articolo del blog") | slug della skill |
 | `flow_tags` | 1–2 divisioni del lavoro per flusso (SEO, Content, Gestione clienti…) | "Da classificare" |
 | `flow_phases` | mappe-processo curate: le attività di ogni flusso, comprese quelle fuori sessione | estrazione automatica |
@@ -180,8 +190,14 @@ claude.ai.
   è quella.
 - «Prima stesura buona» non vede le modifiche fatte su copie caricate nel
   cloud (es. Google Drive) prima della condivisione.
-- Il modulo telemetria è per ora macOS (LaunchAgent); la sonda in sé è Python
-  puro e gira anche su Linux (manca il servizio systemd: contributi benvenuti).
+- **Sistemi operativi.** Sviluppata e testata su macOS. Su **Linux** funziona,
+  con due cose fuori: i costi reali (la sonda è Python puro e gira, manca il
+  servizio systemd — contributi benvenuti) e la riga «risultano riaperte dopo la
+  consegna» nella card Attrito, che legge `mdls` di Spotlight. Su **Windows** non è
+  testata: oltre a `mdls`, lo scanner dà per scontato che le skill siano collegate
+  a `~/.claude/skills` con dei symlink, e dove sono cartelle vere segnala ogni
+  skill come incoerente falsando il punteggio Strumenti. Renderlo tollerante è un
+  contributo piccolo e benvenuto.
 - Claude Code, ovviamente: la dashboard misura il lavoro fatto lì.
 
 ## Licenza

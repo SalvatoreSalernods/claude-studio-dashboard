@@ -287,7 +287,7 @@
 
     <div class="cols" id="alert">
       <div class="card">
-        <h2>Da riparare <span class="sub">· tocca la salute dello studio</span></h2>
+        <h2>Da riparare <span class="sub">· pesa sull'indice operativo</span></h2>
         <div id="riparare"></div>
       </div>
       <div class="card">
@@ -475,12 +475,25 @@ for (const s of TREND.series) {
 }
 let range = Infinity;
 const seg = document.getElementById('trend-seg');
-const firstT = TREND.points.length ? parseD(TREND.points[0].d).getTime() : Date.now();
+// due finestre che contengono gli stessi scan disegnano lo stesso identico grafico:
+// il pulsante viene spento, così non sembra rotto quando non cambia niente
+function ptsIn(days) {
+  const cut = days === Infinity ? null : Date.now() - days * 86400000;
+  return TREND.points.filter(p => !cut || parseD(p.d) >= cut);
+}
+const shownBy = new Map();   // firma dei punti -> finestra più corta che li mostra già
 for (const [label, days] of [['7gg', 7], ['14gg', 14], ['30gg', 30], ['60gg', 60], ['90gg', 90], ['Tutto', Infinity]]) {
   const b = el('button', days === range ? 'on' : '', label);
-  if (days !== Infinity && Date.now() - days * 86400000 <= firstT) {
-    b.disabled = true;
-    b.title = 'lo storico non copre ancora questo periodo: si attiverà da solo';
+  const dates = ptsIn(days).map(p => p.d);
+  if (days !== Infinity) {
+    const sig = dates.join('|');
+    if (dates.length < 2) {
+      b.disabled = true;
+      b.title = 'meno di 2 scan in questo periodo: si attiva da solo quando lo storico cresce';
+    } else if (shownBy.has(sig)) {
+      b.disabled = true;
+      b.title = `in questo periodo ci sono gli stessi scan di «${shownBy.get(sig)}»: il grafico sarebbe identico`;
+    } else shownBy.set(sig, label);
   }
   b.onclick = () => { range = days;
     [...seg.children].forEach(x => x.classList.remove('on')); b.classList.add('on');
@@ -498,9 +511,13 @@ function drawTrend() {
   const cutoff = range === Infinity ? null : Date.now() - range * 86400000;
   const pts = TREND.points.filter(p => !cutoff || parseD(p.d) >= cutoff);
   const note = document.getElementById('trend-note');
+  const scans = pts.filter(p => !p.backfill);
+  const quali = scans.length && scans.length <= 4
+    ? ` (${scans.map(p => fmtD(p.d)).join(', ')})` : '';
+  const conteggio = `${scans.length} scan nel periodo${quali}`;
   note.textContent = pts.length < 2
-    ? 'Lo storico si accumula a ogni scansione: il grafico si popola nei prossimi giorni. I punti più vecchi della Quota di metodo sono ricostruiti a settimane dai diari ancora conservati.'
-    : 'I punti settimanali più vecchi della Quota di metodo sono ricostruiti dai diari; Indice e Copertura partono dal primo scan.';
+    ? `${conteggio}. Lo storico si accumula a ogni scansione: il grafico si popola nei prossimi giorni. I punti più vecchi della Quota di metodo sono ricostruiti a settimane dai diari ancora conservati.`
+    : `${conteggio} · i punti settimanali più vecchi della Quota di metodo sono ricostruiti dai diari; Indice e Copertura partono dal primo scan.`;
   if (!pts.length) return;
 
   const W = svg.clientWidth || 800, H = 240, pl = 34, pr = 46, pt = 14, pb = 26;
@@ -602,7 +619,7 @@ const CMP_METRICS = [
   // [chiave storico, etichetta, direzione buona (+1 su, −1 giù), unità]
   ['salute', 'Indice operativo', 1, ''],
   ['metodo', 'Quota di metodo', 1, '%'],
-  ['copertura', 'Copertura clienti', 1, '%'],
+  ['copertura', 'Copertura Claude Code', 1, '%'],
   ['conformita', 'Prima stesura buona', 1, '%'],
   ['autonomia', 'Autonomia dati', 1, '%'],
   ['giri', 'Giri di revisione', -1, ''],
@@ -1091,10 +1108,11 @@ if (he.anomalies.length) extra.append(el('li', null, `In SKILL/ ma senza SKILL.m
 
 // ---- progetti
 document.getElementById('projects-sub').textContent =
-  `· ${DATA.inventory.projects} cartelle · freddo = nessuna attività da più di 14 giorni`;
+  `· ${DATA.inventory.projects} cartelle · «senza Claude Code» = nessun file toccato nella cartella del progetto da più di 14 giorni (il lavoro fatto altrove non si vede qui)`;
 table('projects-table',
   [['Progetto'], ['CLAUDE.md'], ['Indice'], ['Mod. 7gg', 'num'], ['Mod. 30gg', 'num'], ['Ultima attività', 'num'], ['Stato']],
   DATA.projects.map(p => {
+    // «freddo» qui = nessuna lavorazione passata da Claude Code (non: cliente fermo)
     const freddo = p.days_since === null || p.days_since > 14;
     return [
       { text: p.name, cls: 'name' },
@@ -1104,7 +1122,7 @@ table('projects-table',
       { text: p.mod30, cls: 'num' },
       { text: p.last_date, cls: 'num dim' },
       { node: p.name === DATA.hub ? chip('good', 'hub')
-            : freddo ? chip('warning', `freddo (${p.days_since ?? '—'}gg)`)
+            : freddo ? chip('warning', `no Claude Code (${p.days_since ?? '—'}gg)`)
             : chip('good', 'attivo') },
     ];
   }));

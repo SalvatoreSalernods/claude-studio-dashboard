@@ -47,6 +47,34 @@ OUT_JSON = HERE / "data.json"
 OUT_HTML = HERE / "dashboard.html"
 CACHE = HERE / ".cache.json"
 
+
+def _load_config():
+    """Legge il config.json: `--config <percorso>` se passato, altrimenti quello
+    accanto allo scanner. Il file è locale e non entra nel repo: qui vivono i nomi
+    del workspace di chi usa la dashboard, mai nel codice."""
+    path = HERE / "config.json"
+    if "--config" in sys.argv:
+        i = sys.argv.index("--config")
+        if i + 1 >= len(sys.argv):
+            raise SystemExit("--config richiede un percorso")
+        path = Path(sys.argv[i + 1]).expanduser().resolve()
+        if not path.exists():
+            raise SystemExit(f"config non trovato: {path}")
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        raise SystemExit(f"config illeggibile ({path}): {e}")
+
+
+CONFIG = _load_config()
+
+# la cartella che rappresenta l'utente (non un cliente) è esclusa dal conteggio
+# clienti e dai consigli: il nome sta nel config, non qui
+HUB_PROJECT = (CONFIG.get("hub_project") or "").strip()
+metrics.HUB_PROJECT = HUB_PROJECT
+
 WINDOW_DAYS = 30
 ATP_DIR = WS / "mcp" / "answerthepublic"
 MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -798,12 +826,13 @@ def main():
             f"{s['giri']} giri di richieste e nessuna consegna. Se il lavoro rinasce, "
             "spezzalo in sessioni più piccole o passa da una skill.", ora=True)
     for p in projects:
-        if p["name"] != "Digital Strategist" and (p["days_since"] is None
-                                                  or p["days_since"] > 14):
+        if p["name"] != HUB_PROJECT and (p["days_since"] is None
+                                         or p["days_since"] > 14):
             giorni = p["days_since"] if p["days_since"] is not None else "30+"
-            tip(["Clienti"],
-                f"{p['name']} è fermo da {giorni} giorni: una call o un contenuto "
-                "questa settimana vale più di qualsiasi metrica.", ora=True)
+            tip(["Clienti", "Claude Code"],
+                f"Su {p['name']} non passi da Claude Code da {giorni} giorni: se ci "
+                "stai lavorando lo stesso, guarda quale parte di quel lavoro può "
+                "passare da una skill o da un flusso.", ora=True)
     for tags, text in [
         (["Claude Code", "Consumi"],
          "Una sessione = un lavoro: apri una sessione nuova per ogni lavoro diverso "
@@ -840,6 +869,7 @@ def main():
         "window_days": WINDOW_DAYS,
         "window_from": datefmt(time.time() - WINDOW_DAYS * 86400),
         "window_to": datefmt(time.time()),
+        "hub": HUB_PROJECT,   # il template le mette il chip «hub» invece di «attivo»
         "inventory": {
             "skills": len(skills),
             "projects": len(projects),

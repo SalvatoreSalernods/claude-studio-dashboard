@@ -6,7 +6,7 @@ Qui vivono i numeri che fanno prendere decisioni (formula del 5/7/2026,
 rivista il 14/7/2026 col feedback della community: l'indice misura
 affidabilità e ripetibilità, non solo quanto si usa Claude):
 
-  Salute dello studio (0–100) =
+  Indice operativo (0–100) =
       0,30·Metodo + 0,25·Affidabilità + 0,25·Strumenti + 0,20·Copertura
   - Metodo       = % sessioni operative dentro flussi codificati (chat escluse)
   - Affidabilità = la "prima stesura buona" (first-pass yield): % di consegne
@@ -16,7 +16,13 @@ affidabilità e ripetibilità, non solo quanto si usa Claude):
                    della tile lo dichiara)
   - Strumenti    = 100 − penalità SOLO su ciò che si usa (le auth scadute su
                    servizi mai usati NON pesano: sono "decisioni in sospeso")
-  - Copertura    = % clienti attivi con attività negli ultimi 14 giorni
+  - Copertura    = % di clienti per cui Claude Code ha prodotto qualcosa negli
+                   ultimi 14 giorni: è l'ampiezza dell'adozione, NON lo stato
+                   del rapporto commerciale
+
+Tutto quello che sta qui misura il lavoro passato da Claude Code: la sola
+fonte sono i file toccati nel workspace e i diari di sessione. Un cliente che
+non compare non è un cliente fermo — è un cliente lavorato altrove.
 
 Più: le misure della card Metodo (vivaio, automazioni ferme, banco di prova,
 livello di delega, coda investimenti), il proxy dei consumi (peso per consegna)
@@ -33,7 +39,10 @@ import flows
 HERE = Path(__file__).resolve().parent
 STORICO = HERE / "storico.json"
 
-HUB_PROJECT = "Digital Strategist"   # hub professionale, non un cliente
+HUB_PROJECT = ""                     # cartella-hub di chi usa la dashboard (rappresenta
+                                     # lui, non un cliente): la imposta scan.py leggendo
+                                     # la voce "hub_project" del config. Vuoto = nessuna
+                                     # cartella esclusa dal conteggio clienti.
 FREDDO_GIORNI = 14
 GRACE_SKILL_GIORNI = 7               # una skill nuova non è "ferma" nei primi giorni
 BANCO_GIORNI = 60                    # skill/orchestratori sotto osservazione ROI
@@ -71,7 +80,7 @@ def _pct(num, den):
 
 def _delta(cur, prev, invert=False):
     """Pillola di variazione: dir 'good'/'bad'/'flat' + testo. invert=True se
-    scendere è un bene (es. peso per consegna, clienti freddi)."""
+    scendere è un bene (es. peso per consegna, clienti senza Claude Code)."""
     if prev is None or cur is None:
         return None
     diff = round(cur - prev, 1)
@@ -117,6 +126,7 @@ def compute_by_division_extended(chains, projects, alerts, consegne_files=None):
                       if div in (a.get("divisions") or []))
         strumenti = max(0, 100 - penalty)
         served = [p for p in projects if div in p.get("divisions", [])]
+        # "attivi" = passati da Claude Code nella cadenza attesa, non "clienti vivi"
         active = [p for p in served if p.get("days_since") is not None
                   and p["days_since"] <= FREDDO_GIORNI]
         copertura = _pct(len(active), len(served))
@@ -251,7 +261,10 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
         "sanguisughe": sanguisughe[:3],
     }
 
-    # --- copertura clienti (il hub non è un cliente)
+    # --- copertura: per quanti clienti Claude Code ha prodotto qualcosa nella
+    #     cadenza attesa (il hub non è un cliente). Chi resta fuori NON è un
+    #     cliente fermo: è un cliente lavorato fuori da Claude Code.
+    #     La chiave "freddi" resta tale per compatibilità con storico.json.
     clienti = [p for p in projects if p["name"] != HUB_PROJECT]
     freddi = [p["name"] for p in clienti
               if p.get("days_since") is None or p["days_since"] > FREDDO_GIORNI]
@@ -361,19 +374,21 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
                                            invert=True),
             "note": nota}
     tiles = [
-        {"id": "salute", "label": "Salute dello studio", "value": salute,
+        {"id": "salute", "label": "Indice operativo", "value": salute,
          "unit": "/100", "delta": _delta(salute, prev and prev.get("salute")),
          "note": salute_note},
         {"id": "metodo", "label": "Quota di metodo", "value": metodo, "unit": "%",
          "delta": _delta(metodo, prev and prev.get("metodo")),
          "note": f"{con_metodo} sessioni con flusso su {operative} operative"},
-        {"id": "freddi", "label": "Clienti freddi", "value": len(freddi), "unit": "",
+        {"id": "freddi", "label": "Clienti senza Claude Code",
+         "value": len(freddi), "unit": "",
          "delta": _delta(len(freddi), prev and prev.get("freddi"), invert=True),
-         "note": ", ".join(freddi) if freddi else f"tutti attivi ≤{FREDDO_GIORNI}gg"},
+         "note": ", ".join(freddi) if freddi
+                 else f"tutti i clienti passati da Claude Code ≤{FREDDO_GIORNI}gg"},
         costo_tile,
         {"id": "riparare", "label": "Da riparare", "value": len(riparare), "unit": "",
          "delta": _delta(len(riparare), prev and prev.get("riparare"), invert=True),
-         "note": "alert che toccano la salute"},
+         "note": "alert che pesano sull'indice"},
     ]
 
     entry = {"d": oggi, "salute": salute, "metodo": metodo, "strumenti": strumenti,
@@ -414,9 +429,10 @@ def compute(chains, projects, skills, use_skill_map, riparare, orch_names,
     return {"tiles": tiles, "metodo_card": metodo_card, "attrito": attrito,
             "trend": {"points": points,
                       "series": [
-                          {"key": "salute", "label": "Salute", "color": "acc"},
+                          {"key": "salute", "label": "Indice", "color": "acc"},
                           {"key": "metodo", "label": "Metodo %", "color": "blu"},
-                          {"key": "copertura", "label": "Copertura clienti %", "color": "aqua"},
+                          {"key": "copertura", "label": "Copertura Claude Code %",
+                           "color": "aqua"},
                       ]},
             "salute": salute, "strumenti": strumenti, "copertura": copertura,
             "by_division": by_division}

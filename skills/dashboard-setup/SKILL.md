@@ -50,18 +50,22 @@ domanda proponi come prima opzione quello che hai dedotto dall'esplorazione
 1. **Radice del workspace** — solo se la directory corrente non è chiaramente
    il workspace Claude Code dell'utente.
 2. **Cartella dei progetti/clienti** — proponi la candidata trovata. Spiega:
-   "è la cartella che la dashboard osserva per consegne e clienti da verificare".
+   "è la cartella che la dashboard osserva per capire quali consegne e quali
+   clienti passano da Claude Code".
 3. **Progetto hub** (se esiste) — la cartella che rappresenta l'utente stesso
    (knowledge base personale, materiali propri): non è un cliente e non deve
-   finire tra i "clienti da verificare". Se nessuna cartella sembra un hub, salta.
+   finire tra i "clienti senza Claude Code". Se nessuna cartella sembra un hub,
+   salta.
 4. **Intestazione della pagina** — titolo e sottotitolo (es. nome · mestiere).
 5. **Valuta** dei costi — EUR (default), USD, GBP, CHF…
 
-Soglie (cliente da verificare a 14 giorni, finestra 30 giorni, ecc.): NON
+Soglie (cadenza d'uso per cliente a 14 giorni, finestra 30 giorni, ecc.): NON
 chiederle al primo setup — i default vanno bene; di' solo che esistono e dove
 si cambiano (config.json, sezione `thresholds`). Se l'utente nomina clienti
 con ritmi diversi (mensili, stagionali, in pausa), digli della mappa
-`cadenza_clienti` (nome progetto → giorni di cadenza attesa).
+`cadenza_clienti` (nome progetto → ogni quanto ti aspetti che passi da
+Claude Code). Vale anche per i clienti che si lavorano quasi sempre fuori dal
+workspace: la dashboard misura l'uso di Claude Code, non il rapporto.
 
 ## Passo 2 — Scrivi il config
 

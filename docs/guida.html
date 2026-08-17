@@ -148,9 +148,10 @@
 <section id="cosa">
   <h2><span class="n">1.</span>Che cos'è e come funziona</h2>
   <p class="sub">Una fotografia dello studio, scattata dai dati reali di lavoro.</p>
-  <p>La dashboard fotografa lo stato del lavoro fatto con Claude Code: quanto lavoro passa da processi codificati, quali clienti sono attivi, quali strumenti hanno problemi, quanto costa ogni consegna. Non richiede inserimento manuale di dati: uno scanner legge i diari delle sessioni, i file consegnati nelle cartelle dei clienti e la telemetria dei consumi, e ne ricava tutti i numeri.</p>
-  <p>Tre cose da sapere prima di leggerla:</p>
+  <p>La dashboard fotografa lo stato del lavoro fatto con Claude Code: quanto lavoro passa da processi codificati, per quali clienti Claude Code sta producendo qualcosa, quali strumenti hanno problemi, quanto costa ogni consegna. Non richiede inserimento manuale di dati: uno scanner legge i diari delle sessioni, i file consegnati nelle cartelle dei clienti e la telemetria dei consumi, e ne ricava tutti i numeri.</p>
+  <p>Quattro cose da sapere prima di leggerla:</p>
   <ul>
+    <li><strong>Misura il tuo uso di Claude Code, non il tuo studio.</strong> È il confine più importante di tutta la pagina. L'unica cosa che lo scanner sa vedere sono i file toccati nelle cartelle del workspace e i diari delle sessioni: il lavoro che fai altrove — call, riunioni, campagne gestite dalle piattaforme, contenuti scritti a mano, lavoro dei collaboratori — è invisibile e resta invisibile. Quando la dashboard dice che un cliente non compare da settimane, sta dicendo che <em>quel cliente non passa da Claude Code</em>, non che quel cliente è fermo o trascurato.</li>
     <li><strong>La finestra è di 30 giorni.</strong> Quasi tutti i numeri si riferiscono agli ultimi 30 giorni; il periodo esatto («dal … al …») è scritto nell'intestazione della pagina.</li>
     <li><strong>Si aggiorna a comando.</strong> Basta dire <em>«aggiorna la dashboard»</em> in una sessione di Claude Code. Ogni aggiornamento salva anche una riga nello storico: con uno scan al giorno si costruiscono i grafici di andamento e i confronti tra periodi.</li>
     <li><strong>I numeri servono a decidere, non a dare voti.</strong> Ogni metrica esiste perché suggerisce un'azione precisa quando esce dalla zona buona. Se non c'è niente da fare, la dashboard lo dice esplicitamente («Niente da riparare», «Nessuna azione da fare»).</li>
@@ -165,8 +166,8 @@
   <p>È il numero principale: un punteggio unico che combina quattro ingredienti, ciascuno col suo peso. Misura <strong>affidabilità e ripetibilità</strong> del modo di lavorare, non quanto intensamente usi Claude. Va letto come un semaforo, non come una misura di precisione: i pesi sono una scelta progettuale dichiarata, e il pallino colorato accanto al numero dice subito in che fascia sei.</p>
   <div class="callout">
     <p class="ct">La formula</p>
-    <p><strong>Indice = 0,30 × Metodo + 0,25 × Affidabilità + 0,25 × Strumenti + 0,20 × Copertura clienti</strong></p>
-    <p>Metodo = % di sessioni operative dentro flussi codificati · Affidabilità = la «prima stesura buona»: % di consegne uscite giuste al primo colpo, senza interventi successivi · Strumenti = 100 meno le penalità dei problemi su ciò che usi davvero · Copertura = % di clienti con attività entro la loro cadenza attesa (14 giorni, salvo cadenze personalizzate).</p>
+    <p><strong>Indice = 0,30 × Metodo + 0,25 × Affidabilità + 0,25 × Strumenti + 0,20 × Copertura Claude Code</strong></p>
+    <p>Metodo = % di sessioni operative dentro flussi codificati · Affidabilità = la «prima stesura buona»: % di consegne uscite giuste al primo colpo, senza interventi successivi · Strumenti = 100 meno le penalità dei problemi su ciò che usi davvero · Copertura = % di clienti per cui Claude Code ha prodotto qualcosa entro la cadenza attesa (14 giorni, salvo cadenze personalizzate): misura quanto è <em>ampia</em> l'adozione tra i clienti, non la salute dei rapporti.</p>
     <p>Se nella finestra non c'è nessuna consegna valutabile, l'Affidabilità non entra e vale la formula a tre ingredienti (0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura): la nota della tile lo dichiara.</p>
   </div>
   <p>Chiave di lettura concordata:</p>
@@ -180,8 +181,10 @@
   <h3>Quota di metodo (%)</h3>
   <p>Su 100 sessioni di lavoro vero (le chat di sola conversazione non contano), quante sono passate da un flusso codificato — una skill, una pipeline — invece che dal lavoro «a mano libera». Più è alta, più il metodo di lavoro è industrializzato: ripetibile, delegabile, meno costoso. È l'ingrediente che pesa di più nell'Indice operativo (30%).</p>
 
-  <h3>Clienti da verificare (numero)</h3>
-  <p>Quanti clienti sono fermi oltre la loro <strong>cadenza attesa</strong>: nessuna attività da più di 14 giorni oppure — per chi ha un ritmo diverso (mensili, stagionali, in pausa) — oltre la cadenza fissata per quel cliente nel config (voce <code>cadenza_clienti</code>). L'ideale è zero. La nota elenca i nomi: è la lista delle telefonate da fare. Qui scendere è un bene: la pillola diventa verde quando il numero cala.</p>
+  <h3>Clienti senza Claude Code (numero)</h3>
+  <p>Per quanti clienti <strong>Claude Code non ha prodotto niente</strong> oltre la loro cadenza attesa: nessun file toccato nella loro cartella da più di 14 giorni oppure — per chi ha un ritmo diverso (mensili, stagionali, in pausa) — oltre la cadenza fissata per quel cliente nel config (voce <code>cadenza_clienti</code>).</p>
+  <p>Attenzione a cosa <em>non</em> dice: non dice che quel cliente è fermo, né che lo stai trascurando. Su quel cliente puoi avere avuto tre call, una campagna in corso e due consegne scritte a mano — niente di tutto questo passa da qui. La nota elenca i nomi: è la lista dei clienti che stai lavorando fuori da Claude Code. Serve a una domanda sola: <em>di quel lavoro, c'è un pezzo che varrebbe la pena portare dentro un flusso?</em> Se la risposta è no — perché per quel cliente il lavoro è di natura diversa — la cosa giusta da fare è fissargli la sua cadenza nel config, non rincorrere il numero.</p>
+  <p>Qui scendere è un bene: la pillola diventa verde quando il numero cala.</p>
 
   <h3>Costo per consegna (€) — oppure Peso per consegna (KB)</h3>
   <p>Quanto costa in media, in consumo di modello, ogni file consegnato. Il costo in euro compare quando la sonda di telemetria ha coperto almeno una consegna; il cambio dollaro→euro è quello ufficiale BCE del giorno, indicato nella nota. Se la telemetria non ha ancora dati, la tile mostra il vecchio indicatore sostitutivo: il peso del diario di sessione in KB diviso per le consegne. Questo numero <strong>non entra</strong> nella formula dell'Indice operativo: misura un costo, non un problema.</p>
@@ -191,7 +194,7 @@
 
   <div class="callout">
     <p class="ct">La pillola accanto a ogni numero</p>
-    <p>Ogni tile confronta il valore con lo scan precedente: <strong>«stabile»</strong> se la variazione è minima (sotto 0,5), altrimenti verde o rossa a seconda che il movimento sia buono o cattivo <em>per quella metrica</em>. Per Clienti da verificare, Costo e Da riparare, scendere è un bene.</p>
+    <p>Ogni tile confronta il valore con lo scan precedente: <strong>«stabile»</strong> se la variazione è minima (sotto 0,5), altrimenti verde o rossa a seconda che il movimento sia buono o cattivo <em>per quella metrica</em>. Per Clienti senza Claude Code, Costo e Da riparare, scendere è un bene.</p>
   </div>
 </section>
 
@@ -211,7 +214,7 @@
       <tr><td class="dove">Controlli periodici</td><td>I check ricorrenti (con cadenza), l'ultimo esito e quando tocca rifarli.</td></tr>
       <tr><td class="dove">Flussi di lavoro</td><td>Le mappe dei processi reali: chi fa cosa in ogni fase (tu, una skill, un servizio esterno) e con che frequenza. In testa, le barre «Sessioni per divisione del lavoro» (SEO &amp; AEO, Video &amp; YouTube, Gestione clienti…): ogni flusso porta il chip della sua divisione e la barra dei tag filtra le card. Una divisione con poche sessioni e nessun flusso codificato è il prossimo territorio da industrializzare.</td></tr>
       <tr><td class="dove">Orchestratori e agenti</td><td>Le regie tra skill esistenti e le fasi di lavoro candidate a diventare agenti automatici.</td></tr>
-      <tr><td class="dove">Skill / Progetti / Uso</td><td>L'inventario: tutte le skill con il loro stato tecnico, i progetti con l'ultima attività, le classifiche d'uso di skill e connettori negli ultimi 30 giorni.</td></tr>
+      <tr><td class="dove">Skill / Progetti / Uso</td><td>L'inventario: tutte le skill con il loro stato tecnico, i progetti con l'ultima lavorazione passata da Claude Code (il chip «no Claude Code» dice solo questo, non che il progetto è fermo), le classifiche d'uso di skill e connettori negli ultimi 30 giorni.</td></tr>
       <tr><td class="dove">MCP e plugin</td><td>Lo stato dei connettori esterni e dei plugin installati.</td></tr>
     </tbody>
   </table></div>
@@ -229,13 +232,14 @@
   </div>
   <p><strong>Lettura.</strong> Il pallino è verde, ma 82 è vicino al limite della fascia. La nota dice da dove viene il punteggio: Metodo 76, Affidabilità 85, Strumenti 85, Copertura 83. Il numero più basso è il Metodo, che è anche quello che pesa di più (30%). <strong>Interpretazione:</strong> se vuoi far salire l'Indice, il modo più efficiente non è sistemare gli strumenti, ma far passare più sessioni dai flussi codificati — ogni punto di Metodo vale 0,3 punti di Indice, contro 0,25 di Affidabilità e Strumenti e 0,2 della Copertura.</p>
 
-  <h3>Esempio 2 — Un cliente da verificare è una telefonata, non un numero</h3>
+  <h3>Esempio 2 — Un cliente senza Claude Code non è un cliente fermo</h3>
   <div class="tile">
-    <div class="tl">Clienti da verificare</div>
+    <div class="tl">Clienti senza Claude Code</div>
     <div class="tv">1<span class="pill flat">stabile</span></div>
     <div class="tn">B&amp;B Riviera</div>
   </div>
-  <p><strong>Lettura.</strong> Un cliente è fermo oltre la sua cadenza attesa (qui il default: 14 giorni), e la nota dice chi è: B&amp;B Riviera. Questo stesso dato abbassa la Copertura clienti (83 invece di 100) e quindi l'Indice. <strong>Interpretazione:</strong> la dashboard genera anche il consiglio corrispondente nella sezione Consigli («B&amp;B Riviera è fermo da 21 giorni (cadenza attesa: ≤14gg): una call o un contenuto questa settimana vale più di qualsiasi metrica»). L'azione è fuori dalla dashboard: sentire il cliente. E se un cliente ha per contratto un ritmo più lento — un report al mese, un servizio stagionale — fissagli la sua cadenza in <code>cadenza_clienti</code> nel config: smetterà di comparire qui senza motivo.</p>
+  <p><strong>Lettura.</strong> Per un cliente, Claude Code non ha prodotto niente oltre la sua cadenza attesa (qui il default: 14 giorni), e la nota dice chi è: B&amp;B Riviera. Lo stesso dato abbassa la Copertura Claude Code (83 invece di 100) e quindi l'Indice.</p>
+  <p><strong>Interpretazione.</strong> Questa è l'unica cosa che il numero dice. Su B&amp;B Riviera puoi averci lavorato eccome — call, sopralluoghi, foto, una campagna avviata a mano — ma quel lavoro non è passato dal workspace, quindi lo scanner non lo vede. Il consiglio che la dashboard genera resta perciò dentro il suo perimetro («Su B&amp;B Riviera non passi da Claude Code da 21 giorni (cadenza attesa: ≤14gg): se ci stai lavorando lo stesso, guarda quale parte di quel lavoro può passare da una skill o da un flusso»): la domanda è se c'è un pezzo di quel lavoro che conviene codificare, non se il cliente va richiamato — quello lo sai tu, la dashboard no. E se per quel cliente il ritmo lento è normale — un report al mese, un servizio stagionale, un lavoro che per sua natura si fa fuori da Claude — fissagli la sua cadenza in <code>cadenza_clienti</code> nel config: smetterà di comparire qui senza motivo.</p>
 
   <h3>Esempio 3 — Perché Strumenti vale 85 e non 100</h3>
   <div class="tile">
@@ -268,7 +272,7 @@
     <tbody>
       <tr><td class="dove">Indice operativo</td><td class="soglia">≥ 80 · 60–79 · &lt; 60</td><td>Chiave di lettura a semaforo — il pallino verde/giallo/rosso accanto al numero: in salute · da tenere d'occhio · serve un intervento. La nota mostra sempre gli ingredienti per capire quale sta pesando.</td></tr>
       <tr><td class="dove">Affidabilità nell'Indice</td><td class="soglia">≥ 1 consegna valutabile</td><td>L'ingrediente Affidabilità (la «prima stesura buona», peso 25%) entra nell'Indice appena la finestra contiene almeno una consegna valutabile; senza, vale la formula a tre ingredienti (0,40·Metodo + 0,30·Strumenti + 0,30·Copertura) e la nota della tile lo dichiara.</td></tr>
-      <tr><td class="dove">Pillola di variazione</td><td class="soglia">± 0,5</td><td>Variazione sotto 0,5 rispetto allo scan precedente = «stabile»; oltre, pillola verde o rossa secondo la direzione buona della metrica (per Clienti da verificare, Costo e Da riparare scendere è un bene).</td></tr>
+      <tr><td class="dove">Pillola di variazione</td><td class="soglia">± 0,5</td><td>Variazione sotto 0,5 rispetto allo scan precedente = «stabile»; oltre, pillola verde o rossa secondo la direzione buona della metrica (per Clienti senza Claude Code, Costo e Da riparare scendere è un bene).</td></tr>
       <tr><td class="dove">Costo per consegna</td><td class="soglia">≥ 1 consegna coperta</td><td>La tile passa da «Peso per consegna» (KB, indicatore sostitutivo) a «Costo per consegna» (€) appena la telemetria copre almeno una consegna. Cambio BCE del giorno; lo storico resta in dollari.</td></tr>
     </tbody>
   </table></div>
@@ -288,10 +292,10 @@
   </table></div>
 
   <div class="twrap"><table>
-    <caption>Clienti <span class="cs">· copertura e churn prevention</span></caption>
+    <caption>Clienti <span class="cs">· quanto è ampia l'adozione di Claude Code</span></caption>
     <thead><tr><th>Indicatore</th><th>Soglia</th><th>Cosa succede / cosa ti dice</th></tr></thead>
     <tbody>
-      <tr><td class="dove">Cliente da verificare</td><td class="soglia">&gt; 14 giorni, o la cadenza del cliente</td><td>Un cliente senza alcuna attività oltre la sua cadenza attesa: entra nella tile Clienti da verificare, abbassa la Copertura (e quindi l'Indice) e genera il consiglio «una call o un contenuto questa settimana vale più di qualsiasi metrica». La cadenza è 14 giorni di default (<code>thresholds.freddo_giorni</code>), ma si fissa cliente per cliente con <code>cadenza_clienti</code> — per i clienti mensili, stagionali o in pausa. Il progetto-hub (voce <code>hub_project</code> del config) non conta: non è un cliente.</td></tr>
+      <tr><td class="dove">Cliente senza Claude Code</td><td class="soglia">&gt; 14 giorni, o la cadenza del cliente</td><td>Un cliente per cui Claude Code non ha prodotto niente oltre la sua cadenza attesa: entra nella tile Clienti senza Claude Code, abbassa la Copertura (e quindi l'Indice) e genera il consiglio «se ci stai lavorando lo stesso, guarda quale parte di quel lavoro può passare da una skill o da un flusso». Non è un giudizio sul rapporto col cliente: quel cliente può essere il più attivo che hai, se il lavoro lo fai fuori dal workspace. La cadenza è 14 giorni di default (<code>thresholds.freddo_giorni</code>), ma si fissa cliente per cliente con <code>cadenza_clienti</code> — per i clienti mensili, stagionali, in pausa o lavorati per lo più fuori da Claude. Il progetto-hub (voce <code>hub_project</code> del config) non conta: non è un cliente.</td></tr>
     </tbody>
   </table></div>
 
@@ -345,17 +349,17 @@
     <div><dt>Backfill</dt><dd>Ricostruzione all'indietro di un dato storico: nel grafico Andamento, i punti precedenti alla nascita dello storico sono ricavati dai diari di sessione ancora conservati.</dd></div>
     <div><dt>Banco di prova</dt><dd>Le skill create negli ultimi 60 giorni, osservate per capire se l'investimento rende: quanti giorni di vita hanno e quante volte sono state usate.</dd></div>
     <div><dt>CLAUDE.md</dt><dd>Il file di istruzioni permanenti di un progetto o cliente: tono di voce, personas, convenzioni, correzioni ricorrenti. Claude Code lo legge all'inizio di ogni sessione — per questo travasarci le correzioni che si ripetono le elimina alla radice.</dd></div>
-    <div><dt>Cadenza attesa</dt><dd>Il ritmo di attività normale per un cliente: 14 giorni di default (<code>thresholds.freddo_giorni</code>), personalizzabile cliente per cliente nel config (voce <code>cadenza_clienti</code>) per i contratti mensili, stagionali o in pausa.</dd></div>
-    <div><dt>Cliente da verificare</dt><dd>Cliente senza alcuna attività (sessioni o consegne) oltre la sua cadenza attesa. Segnale di prevenzione, non un verdetto: meglio una call adesso che un cliente perso dopo.</dd></div>
+    <div><dt>Cadenza attesa</dt><dd>Ogni quanto ti aspetti che un cliente passi da Claude Code: 14 giorni di default (<code>thresholds.freddo_giorni</code>), personalizzabile cliente per cliente nel config (voce <code>cadenza_clienti</code>) per i contratti mensili, stagionali, in pausa o per i clienti che lavori quasi sempre fuori dal workspace.</dd></div>
+    <div><dt>Cliente senza Claude Code</dt><dd>Cliente per cui, oltre la sua cadenza attesa, non risultano né sessioni né file toccati nella sua cartella. Dice dove <em>non</em> arriva il metodo, non come va il rapporto: il lavoro fatto fuori dal workspace — call, campagne, contenuti scritti a mano — non lascia traccia qui.</dd></div>
     <div><dt>Consegna</dt><dd>Un file prodotto e salvato nella cartella di un progetto durante una sessione: un report, un articolo, un Excel. È l'unità di misura del lavoro che esce dallo studio.</dd></div>
-    <div><dt>Copertura clienti</dt><dd>Percentuale di clienti con attività entro la loro cadenza attesa. Uno degli ingredienti dell'Indice operativo (peso 20%).</dd></div>
+    <div><dt>Copertura Claude Code</dt><dd>Percentuale di clienti per cui Claude Code ha prodotto qualcosa entro la loro cadenza attesa: l'ampiezza dell'adozione tra i clienti, non la salute del portafoglio. Uno degli ingredienti dell'Indice operativo (peso 20%).</dd></div>
     <div><dt>Diario di sessione</dt><dd>Il registro automatico di tutto ciò che accade in una sessione di Claude Code (messaggi, strumenti usati, file scritti). È la materia prima da cui lo scanner ricava quasi tutte le metriche.</dd></div>
     <div><dt>Divisione del lavoro</dt><dd>L'area professionale a cui appartiene un flusso: SEO &amp; AEO, Content, Advertising, Social, Video &amp; YouTube, Strategia, Gestione clienti, Personal Brand, Officina del metodo. Ogni flusso porta 1–2 divisioni (chip sulla card); le barre in testa alla card Flussi mostrano quante sessioni assorbe ciascuna. «Officina del metodo» è il lavoro sul sistema stesso (dashboard, skill nuove, configurazione), distinto dal lavoro per i clienti; «Da classificare» segnala un flusso nuovo a cui va assegnata la divisione.</dd></div>
     <div><dt>Finestra</dt><dd>Il periodo di riferimento dei dati: 30 giorni, con le date esatte nell'intestazione della pagina.</dd></div>
     <div><dt>Flusso codificato</dt><dd>Un processo di lavoro con una ricetta scritta: una skill o una catena di skill. Il contrario del «lavoro libero», fatto a mano libera senza ricetta.</dd></div>
     <div><dt>Flusso trasversale</dt><dd>Un flusso codificato che ha consegnato per almeno 2 progetti diversi nella finestra: il riuso della stessa ricetta tra clienti. Una ricetta che lavora per un solo cliente è una procedura; una che lavora per molti è capitale dello studio. Il riquadro omonimo nella card Metodo li conta e li elenca.</dd></div>
     <div><dt>Giri di revisione</dt><dd>Quanti tuoi messaggi servono in media, dopo la prima consegna, per arrivare alla versione definitiva: il numero medio di iterazioni per chiudere un lavoro. Più è basso, migliore era il brief (o la skill).</dd></div>
-    <div><dt>Indice operativo</dt><dd>Il punteggio principale (0–100), da leggere a semaforo: 0,30 × Metodo + 0,25 × Affidabilità + 0,25 × Strumenti + 0,20 × Copertura clienti (senza consegne valutabili: 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura). Verde da 80 in su, giallo tra 60 e 79, rosso sotto 60. Misura affidabilità e ripetibilità del metodo, non quanto usi Claude. I pesi sono una scelta progettuale dichiarata, non una misura scientifica: la nota mostra sempre gli ingredienti.</dd></div>
+    <div><dt>Indice operativo</dt><dd>Il punteggio principale (0–100), da leggere a semaforo: 0,30 × Metodo + 0,25 × Affidabilità + 0,25 × Strumenti + 0,20 × Copertura Claude Code (senza consegne valutabili: 0,40 × Metodo + 0,30 × Strumenti + 0,30 × Copertura). Verde da 80 in su, giallo tra 60 e 79, rosso sotto 60. Misura affidabilità e ripetibilità del metodo, non quanto usi Claude. I pesi sono una scelta progettuale dichiarata, non una misura scientifica: la nota mostra sempre gli ingredienti.</dd></div>
     <div><dt>MCP</dt><dd>Model Context Protocol: lo standard con cui Claude si collega a servizi esterni (Ubersuggest, Google Calendar, Brevo…). Nella dashboard «un MCP» è uno di questi connettori.</dd></div>
     <div><dt>Orchestratore</dt><dd>Una skill-regia che concatena più skill in un unico flusso (es. dalla keyword all'articolo pubblicabile), con i tuoi checkpoint tra una fase e l'altra. Il «Livello di delega» misura quante sessioni sono guidate da un orchestratore.</dd></div>
     <div><dt>Prima stesura buona</dt><dd>Percentuale di consegne uscite giuste al primo colpo: mai riscritte dopo un tuo messaggio in chat, né riprese in un'altra sessione entro 7 giorni, né corrette a mano. In gergo industriale è il <em>first-pass yield</em>: la quota di lavori completati senza interventi successivi. È anche l'ingrediente Affidabilità dell'Indice operativo (peso 25%). Include un margine di ambiguità dichiarato: un'integrazione conta come una correzione.</dd></div>
@@ -376,6 +380,7 @@
   <h2><span class="n">7.</span>Cosa la dashboard non vede</h2>
   <p class="sub">I limiti dichiarati, per non sovra-interpretare i numeri.</p>
   <ul>
+    <li><strong>Tutto il lavoro fatto fuori da Claude Code.</strong> È il limite che spiega tutti gli altri. Call, riunioni, campagne gestite dalle piattaforme, contenuti scritti a mano, lavoro dei collaboratori, tempo passato al telefono con un cliente: niente di questo esiste, per la dashboard. Perciò «Clienti senza Claude Code» e «Copertura» vanno letti sempre con la stessa chiave — dicono <em>dove arriva il metodo</em>, mai quanto stai lavorando né come vanno i rapporti. Un cliente può stare in cima al tuo mese e in fondo a questa pagina nello stesso momento.</li>
     <li><strong>Le modifiche su Google Drive.</strong> Se una consegna viene corretta sulla copia caricata su Drive, da qui non si vede: la «Prima stesura buona» è leggermente ottimista per costruzione.</li>
     <li><strong>Correzione o integrazione?</strong> Un file riscritto dopo un tuo messaggio conta comunque come «non buono alla prima», anche se il messaggio era «aggiungi una sezione» e non «rifallo». La soglia del consiglio (60%) è bassa apposta.</li>
     <li><strong>Lo stato vero dei connettori.</strong> La dashboard legge le cache locali del Mac: per lo stato in tempo reale di un MCP, il comando <code>/mcp</code> in sessione è la fonte autorevole.</li>
