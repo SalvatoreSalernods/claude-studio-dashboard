@@ -1,6 +1,6 @@
 {
   "name": "claude-studio-dashboard",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Dashboard del tuo studio professionale su Claude Code: consegne, costi reali per consegna, quota di metodo, clienti che non passano da Claude Code, flussi di lavoro e consigli — da una scansione locale dei metadati, zero inserimento manuale.",
   "author": {
     "name": "Salvatore Salerno",
@@ -8,5 +8,12 @@
   },
   "repository": "https://github.com/SalvatoreSalernods/claude-studio-dashboard",
   "license": "MIT",
-  "keywords": ["dashboard", "metrics", "freelance", "claude-code", "analytics", "workspace"]
+  "keywords": [
+    "dashboard",
+    "metrics",
+    "freelance",
+    "claude-code",
+    "analytics",
+    "workspace"
+  ]
 }
