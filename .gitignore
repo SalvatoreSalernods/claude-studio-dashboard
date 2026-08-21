@@ -7,7 +7,6 @@ __pycache__/
 
 # Output locali del motore (mai nel repo: sono dati dell'utente)
 dashboard.html
-dashboard-demo.html
 data.json
 storico.json
 config.json
@@ -15,5 +14,5 @@ artifact-url.txt
 .cache.json
 .rate.json
 
-# eccezione: la demo per GitHub Pages è generata e committata apposta
+# eccezione: la vetrina per GitHub Pages è generata e committata apposta
 !docs/index.html

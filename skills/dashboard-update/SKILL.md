@@ -6,9 +6,8 @@ description: >
   sullo stesso URL stabile. Attiva quando l'utente dice "aggiorna la
   dashboard", "ripubblica la dashboard", "stato del workspace", "com'è messo
   lo studio", "dashboard del workspace", o a fine settimana per la fotografia
-  periodica. Gestisce anche la versione demo per gli screenshot ("dashboard
-  demo", "screenshot della dashboard"). Se non esiste ancora un config.json,
-  NON improvvisare: rimanda alla skill dashboard-setup.
+  periodica. Se non esiste ancora un config.json, NON improvvisare: rimanda
+  alla skill dashboard-setup.
 ---
 
 # Dashboard Update — scan e ripubblicazione
@@ -48,15 +47,9 @@ metodo, Clienti senza Claude Code, Costo/Peso per consegna, Da riparare) con le
 variazioni, e
 l'alert più importante se c'è. Non incollare tutto il dump: seleziona.
 
-## Variante demo (screenshot)
+## Screenshot e condivisione
 
-Se l'utente vuole screenshot da condividere (post, presentazioni):
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/engine/scan.py" --demo --out <dove>/dashboard-demo.html
-```
-
-Genera una dashboard con dati INTERAMENTE di fantasia («freelance ideale»):
-non legge il workspace e non tocca nulla (né storico, né Artifact). Aprila
-nel browser per gli screenshot. **Mai pubblicare la demo sull'URL della
-dashboard vera.**
+La dashboard mostra i nomi delle tue cartelle cliente in chiaro (tabella
+Progetti, note delle tile, destinazioni dei flussi). Prima di condividere
+uno screenshot su LinkedIn o in una presentazione, ricordalo all'utente:
+sono dati suoi e dei suoi clienti.

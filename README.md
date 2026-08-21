@@ -35,7 +35,7 @@ documentazione in italiano.
 > now.
 
 **[→ Demo live](https://salvatoresalernods.github.io/claude-studio-dashboard/)**
-(dati di fantasia, generati da `engine/demo.py`) ·
+(dati di fantasia: nessun workspace reale) ·
 **[→ Guida alla lettura](https://salvatoresalernods.github.io/claude-studio-dashboard/guida.html)**
 (metriche, soglie, esempi, glossario)
 
@@ -89,7 +89,6 @@ portano le etichette del framework
 │   metrics.py          ← formule delle metriche decisionali
 │   flows.py            ← estrazione dei flussi dai diari di sessione
 │   template.html       ← la pagina (tema chiaro/scuro, stampa PDF)
-│   demo.py             ← dashboard demo con dati di fantasia (per screenshot)
 └─ telemetry/           ← modulo OPZIONALE per i costi reali (macOS)
 ```
 
@@ -146,9 +145,9 @@ senza, al suo posto trovi il proxy «Peso per consegna» in KB.
   Uno scan al giorno nei giorni lavorati alimenta lo storico: il grafico
   Andamento e il Confronto periodi si popolano da soli.
 - **`python3 engine/scan.py --config … --dump`** → riepilogo a terminale.
-- **`python3 engine/scan.py --demo --out demo.html`** → dashboard con dati
-  interamente di fantasia, per screenshot da condividere senza esporre i
-  clienti (non legge il workspace, non tocca nulla).
+
+> La pagina riporta i nomi delle tue cartelle cliente in chiaro: tienilo
+> presente prima di condividerne uno screenshot.
 
 ## Il config.json
 

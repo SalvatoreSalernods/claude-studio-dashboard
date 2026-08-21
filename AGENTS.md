@@ -36,13 +36,13 @@ Non ampliare questa ispezione semantica.
 - `engine/metrics.py`: formule delle metriche decisionali e storico.
 - `engine/flows.py`: estrazione dei flussi dai diari JSONL.
 - `engine/config.py`: default e caricamento di `config.json`.
-- `engine/demo.py`: dataset interamente di fantasia.
 - `engine/template.html`: pagina HTML/CSS/JS generata.
 - `skills/dashboard-setup/`: configurazione guidata iniziale.
 - `skills/dashboard-update/`: scansione e ripubblicazione.
 - `telemetry/`: costi/token reali opzionali; ricevitore stdlib, integrazione
   LaunchAgent documentata per macOS.
-- `docs/index.html`: demo intenzionalmente committata per GitHub Pages.
+- `docs/index.html`: vetrina con dati di fantasia, committata per GitHub Pages;
+  è un artefatto generato fuori da questo repo, non modificarlo a mano.
 - `config.example.json`: riferimento del formato di configurazione.
 
 ## Esecuzione
@@ -50,7 +50,6 @@ Non ampliare questa ispezione semantica.
 ```bash
 python3 engine/scan.py --config /percorso/config.json
 python3 engine/scan.py --config /percorso/config.json --dump
-python3 engine/scan.py --demo --out dashboard-demo.html
 ```
 
 Nessun percorso, nome cliente, soglia o brand va cablato nel codice: ciò che
@@ -60,9 +59,9 @@ dipende dal workspace vive in `config.json`, secondo `config.example.json`.
 
 - UI, messaggi utente e documentazione sono in italiano.
 - Mantieni formule e soglie esplicite e verificabili.
-- `dashboard.html`, `dashboard-demo.html`, `data.json`, `config.json`,
+- `dashboard.html`, `data.json`, `config.json`,
   `storico.json`, `artifact-url.txt`, cache e rate locali sono gitignorati:
   non committarli.
-- `docs/index.html` è l'eccezione deliberata: contiene soltanto la demo fittizia.
+- `docs/index.html` è l'eccezione deliberata: contiene soltanto dati fittizi.
 - Prima di modificare privacy, scansione, formule o formato config, verifica
   README.md, `config.example.json` e le due skill.

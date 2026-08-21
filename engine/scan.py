@@ -15,9 +15,6 @@ com'è fatto il workspace sta nel config (vedi config.example.json).
 Uso:
   python3 scan.py --config <percorso>/config.json    # scansiona e scrive i due file
   python3 scan.py --config <percorso>/config.json --dump   # + riepilogo a terminale
-  python3 scan.py --demo    # NON scansiona: renderizza dashboard-demo.html con
-                            # dati di fantasia (demo.py) per gli screenshot social.
-                            # Non tocca data.json, storico, cache né l'Artifact.
 
 Zero dipendenze: solo libreria standard. La scansione dei transcript usa una
 cache incrementale (.cache.json) per restare veloce.
@@ -955,8 +952,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if "--demo" in sys.argv:
-        import demo
-        demo.main()
-    else:
-        main()
+    main()
